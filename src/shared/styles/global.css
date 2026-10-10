@@ -1,41 +1,43 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Pretendard', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Pretendard Variable', 'Pretendard', ui-sans-serif, system-ui, sans-serif;
 
   /* 대시보드 전용 브레이크포인트: ≥1200px 에서 2열 */
   --breakpoint-dash: 1200px;
 
   /* 대시보드 색 토큰 (src/pages/dashboard/constants/dashboardTheme.ts 와 동일 값) */
-  --color-dash-bg: #0f1115;
-  --color-dash-surface: #181b22;
-  --color-dash-raised: #20242d;
-  --color-dash-border: #2c313c;
-  --color-dash-text: #f5f6f8;
-  --color-dash-muted: #9aa3b2;
+  --color-dash-bg: #0b0d12;
+  --color-dash-surface: #13161e;
+  --color-dash-raised: #1b1f2a;
+  --color-dash-border: #262b37;
+  --color-dash-text: #f3f4f6;
+  --color-dash-muted: #8b93a5;
   --color-dash-accent: #ffd43b;
-  --color-dash-emergency: #ff6b57;
-  --color-dash-server: #4dabf7;
-  --color-dash-filtered: #6c7380;
-  --color-dash-success: #51cf66;
+  --color-dash-emergency: #ff7a66;
+  --color-dash-server: #5cb3ff;
+  --color-dash-filtered: #6b7280;
+  --color-dash-success: #4ade80;
 
   /* 3~5m 거리 가독성용 폰트 크기 */
+  --text-dash-caption: clamp(11px, 0.85vw, 14px);
   --text-dash-label: clamp(13px, 1.05vw, 17px);
   --text-dash-body: clamp(16px, 1.4vw, 22px);
   --text-dash-title: clamp(20px, 1.8vw, 28px);
   --text-dash-metric: clamp(28px, 3vw, 48px);
 
-  --animate-motor-pulse: motor-pulse 1.1s ease-out infinite;
-  --animate-stage-pulse: stage-pulse 0.7s ease-in-out infinite alternate;
-  --animate-row-flash: row-flash 1.2s ease-out 1;
+  --animate-motor-pulse: motor-pulse 1.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  --animate-stage-pulse: stage-pulse 0.8s ease-in-out infinite alternate;
+  --animate-row-flash: row-flash 1.4s ease-out 1;
+  --animate-dot-pulse: dot-pulse 2s ease-in-out infinite;
 
   @keyframes motor-pulse {
     0% {
       transform: scale(1);
-      opacity: 0.85;
+      opacity: 0.7;
     }
     100% {
-      transform: scale(2.4);
+      transform: scale(2.6);
       opacity: 0;
     }
   }
@@ -43,22 +45,49 @@
   @keyframes stage-pulse {
     from {
       transform: scale(1);
-      filter: brightness(1);
     }
     to {
-      transform: scale(1.06);
-      filter: brightness(1.25);
+      transform: scale(1.05);
     }
   }
 
   @keyframes row-flash {
     from {
-      background-color: color-mix(in srgb, var(--color-dash-accent) 35%, transparent);
+      background-color: color-mix(in srgb, var(--color-dash-accent) 30%, transparent);
     }
     to {
-      background-color: color-mix(in srgb, var(--color-dash-accent) 12%, transparent);
+      background-color: color-mix(in srgb, var(--color-dash-accent) 8%, transparent);
     }
   }
+
+  @keyframes dot-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-dash-success) 60%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-dash-success) 0%, transparent);
+    }
+  }
+}
+
+/* 대시보드 공통 카드 */
+@utility dash-card {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, white 7%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 3.5%, transparent), transparent 40%),
+    var(--color-dash-surface);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 5%, transparent),
+    0 20px 40px -28px rgb(0 0 0 / 0.8);
+}
+
+@utility dash-eyebrow {
+  font-size: var(--text-dash-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-dash-muted);
 }
 
 html,

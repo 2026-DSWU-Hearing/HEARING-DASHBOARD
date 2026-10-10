@@ -1,16 +1,16 @@
-/** 대시보드 색 토큰 (다크 배경 + 노란 포인트, PPT와 톤 통일) */
+/** 대시보드 색 토큰 (다크 배경 + 노란 포인트, PPT와 톤 통일). global.css @theme 와 동일 값 */
 export const DASHBOARD_THEME = {
-  background: '#0f1115',
-  surface: '#181b22',
-  surfaceRaised: '#20242d',
-  border: '#2c313c',
-  textPrimary: '#f5f6f8',
-  textMuted: '#9aa3b2',
+  background: '#0b0d12',
+  surface: '#13161e',
+  surfaceRaised: '#1b1f2a',
+  border: '#262b37',
+  textPrimary: '#f3f4f6',
+  textMuted: '#8b93a5',
   accent: '#ffd43b', // 포인트 (노랑)
-  emergency: '#ff6b57', // 긴급 / 온디바이스 (코랄)
-  server: '#4dabf7', // 서버 경로 (파랑)
-  filtered: '#6c7380', // 필터링 (회색)
-  success: '#51cf66',
+  emergency: '#ff7a66', // 긴급 / 온디바이스 (코랄)
+  server: '#5cb3ff', // 서버 경로 (파랑)
+  filtered: '#6b7280', // 필터링 (회색)
+  success: '#4ade80',
 } as const
 
 export const MAX_EVENT_COUNT = 20

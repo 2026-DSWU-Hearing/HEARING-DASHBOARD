@@ -15,38 +15,41 @@ const DeviceStatusCard = ({
   const isLowBattery = clampedBattery <= LOW_BATTERY_PERCENT
 
   return (
-    <section className="border-dash-border bg-dash-surface grid grid-cols-3 gap-3 rounded-2xl border px-5 py-4">
-      <div className="min-w-0">
-        <p className="text-dash-label text-dash-muted">현재 모드</p>
-        <p className="text-dash-metric text-dash-accent truncate leading-tight font-bold">
-          {currentMode}
-        </p>
+    <section className="dash-card grid grid-cols-[1.2fr_1fr_1fr] divide-x divide-white/6 px-2 py-4">
+      <div className="min-w-0 px-4">
+        <p className="dash-eyebrow">현재 모드</p>
+        <div className="border-dash-accent/40 bg-dash-accent/10 mt-1.5 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-1">
+          <span aria-hidden="true" className="bg-dash-accent size-2 rounded-full" />
+          <span className="text-dash-title text-dash-accent truncate leading-tight font-bold">
+            {currentMode}
+          </span>
+        </div>
       </div>
 
-      <div className="min-w-0">
-        <p className="text-dash-label text-dash-muted">넥밴드 연결</p>
-        <p className="text-dash-title text-dash-text flex items-center gap-2 font-semibold">
+      <div className="min-w-0 px-4">
+        <p className="dash-eyebrow">넥밴드 연결</p>
+        <p className="text-dash-title text-dash-text mt-1.5 flex items-center gap-2.5 leading-tight font-semibold">
           <span
             aria-hidden="true"
-            className={`size-3.5 rounded-full ${
-              isDeviceConnected
-                ? 'bg-dash-success shadow-[0_0_12px_var(--color-dash-success)]'
-                : 'bg-dash-emergency'
+            className={`size-3 shrink-0 rounded-full ${
+              isDeviceConnected ? 'bg-dash-success animate-dot-pulse' : 'bg-dash-emergency'
             }`}
           />
           {isDeviceConnected ? '연결됨' : '연결 끊김'}
         </p>
       </div>
 
-      <div className="min-w-0">
-        <p className="text-dash-label text-dash-muted">배터리</p>
-        <p className="text-dash-title text-dash-text font-semibold">{`${clampedBattery}%`}</p>
+      <div className="min-w-0 px-4">
+        <p className="dash-eyebrow">배터리</p>
+        <p className="text-dash-title text-dash-text mt-1.5 leading-tight font-semibold tabular-nums">
+          {`${clampedBattery}%`}
+        </p>
         <div
           role="progressbar"
           aria-valuenow={clampedBattery}
           aria-valuemin={0}
           aria-valuemax={100}
-          className="bg-dash-raised mt-1.5 h-2 w-full overflow-hidden rounded-full"
+          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/8"
         >
           <div
             className={`h-full rounded-full ${isLowBattery ? 'bg-dash-emergency' : 'bg-dash-success'}`}

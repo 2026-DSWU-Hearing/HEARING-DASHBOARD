@@ -14,23 +14,40 @@ interface PipelineViewPropTypes {
 
 type StageStatusTypes = 'pending' | 'done' | 'current' | 'filtered' | 'skipped'
 
-const LANE_ACCENT_CLASS: Record<PipelineLaneTypes, string> = {
-  emergency: 'border-dash-emergency bg-dash-emergency text-dash-bg',
-  normal: 'border-dash-server bg-dash-server text-dash-bg',
+const LANE_STYLE: Record<
+  PipelineLaneTypes,
+  { done: string; current: string; connector: string; title: string; dot: string }
+> = {
+  emergency: {
+    done: 'border-dash-emergency/50 bg-dash-emergency/15 text-dash-emergency',
+    current:
+      'border-dash-emergency bg-dash-emergency text-dash-bg shadow-[0_0_28px_-4px_var(--color-dash-emergency)]',
+    connector: 'bg-dash-emergency/60',
+    title: 'text-dash-emergency',
+    dot: 'bg-dash-emergency',
+  },
+  normal: {
+    done: 'border-dash-server/50 bg-dash-server/15 text-dash-server',
+    current:
+      'border-dash-server bg-dash-server text-dash-bg shadow-[0_0_28px_-4px_var(--color-dash-server)]',
+    connector: 'bg-dash-server/60',
+    title: 'text-dash-server',
+    dot: 'bg-dash-server',
+  },
 }
 
 const getStageClassName = (status: StageStatusTypes, lane: PipelineLaneTypes) => {
   switch (status) {
     case 'done':
-      return LANE_ACCENT_CLASS[lane]
+      return LANE_STYLE[lane].done
     case 'current':
-      return `${LANE_ACCENT_CLASS[lane]} animate-stage-pulse shadow-[0_0_24px_currentColor]`
+      return `${LANE_STYLE[lane].current} animate-stage-pulse`
     case 'filtered':
-      return 'border-dash-filtered bg-dash-filtered text-dash-text'
+      return 'border-dash-filtered/60 bg-dash-filtered/25 text-dash-text'
     case 'skipped':
-      return 'border-dash-border bg-transparent text-dash-filtered line-through'
+      return 'border-white/5 bg-transparent text-dash-filtered/70 line-through'
     default:
-      return 'border-dash-border bg-dash-raised text-dash-muted'
+      return 'border-white/8 bg-white/[0.03] text-dash-muted'
   }
 }
 
@@ -59,11 +76,11 @@ const PipelineView = ({ activeEvent, activeStage }: PipelineViewPropTypes) => {
   }
 
   return (
-    <section className="border-dash-border bg-dash-surface flex min-h-0 flex-col gap-2 rounded-2xl border px-5 py-3">
-      <div className="flex items-center justify-between gap-4">
+    <section className="dash-card flex min-h-0 flex-col gap-3 px-5 py-4">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-dash-label text-dash-muted">처리 경로</h2>
-          <p className="text-dash-body text-dash-text truncate">
+          <p className="dash-eyebrow">처리 경로</p>
+          <p className="text-dash-body text-dash-text mt-0.5 truncate">
             {activeEvent ? (
               <>
                 <span className="font-bold">{activeEvent.soundName}</span>
@@ -75,52 +92,54 @@ const PipelineView = ({ activeEvent, activeStage }: PipelineViewPropTypes) => {
           </p>
         </div>
         <div className="shrink-0 text-right">
-          <span className="text-dash-label text-dash-muted block">감지 → 수신 지연</span>
-          <span
-            className={`text-dash-metric block leading-none font-bold tabular-nums ${
+          <p className="dash-eyebrow">감지 → 수신 지연</p>
+          <p
+            className={`text-dash-metric leading-none font-bold tabular-nums transition-colors ${
               isFinished ? 'text-dash-accent' : 'text-dash-filtered'
             }`}
           >
             {activeEvent ? formatLatency(activeEvent.detectedAt, activeEvent.receivedAt) : '—'}
-          </span>
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col justify-center gap-2">
+      <div className="flex flex-1 flex-col justify-center gap-2.5">
         {PIPELINE_LANES.map(({ lane, label, description, stages }) => {
           const isLaneActive = lane === activeLane
           const stageIds = stages.map(({ stage }) => stage)
+          const laneStyle = LANE_STYLE[lane]
 
           return (
             <div
               key={lane}
-              className={`rounded-xl border px-4 py-2 transition-opacity duration-300 ${
+              className={`rounded-2xl border px-4 py-3 transition-all duration-300 ${
                 isLaneActive
-                  ? 'border-dash-border bg-dash-raised opacity-100'
-                  : 'border-transparent opacity-35'
+                  ? 'border-white/8 bg-white/[0.04] opacity-100'
+                  : 'border-transparent opacity-30'
               }`}
             >
-              <div className="mb-1.5 flex items-baseline gap-3">
-                <span
-                  className={`text-dash-body font-bold ${lane === 'emergency' ? 'text-dash-emergency' : 'text-dash-server'}`}
-                >
-                  {label}
-                </span>
-                <span className="text-dash-label text-dash-muted">{description}</span>
+              <div className="mb-2 flex items-center gap-2.5">
+                <span aria-hidden="true" className={`size-2 rounded-full ${laneStyle.dot}`} />
+                <span className={`text-dash-label font-bold ${laneStyle.title}`}>{label}</span>
+                <span className="text-dash-caption text-dash-muted">{description}</span>
               </div>
 
               <ol className="flex flex-wrap items-center gap-y-2">
                 {stages.map(({ stage, label: stageLabel }, index) => {
                   const status = getStageStatus(lane, stageIds, stage)
+                  const isLit = status === 'done' || status === 'current' || status === 'filtered'
                   const displayLabel = status === 'filtered' ? '필터링' : stageLabel
 
                   return (
                     <Fragment key={stage}>
                       {index > 0 && (
-                        <li aria-hidden="true" className="bg-dash-border h-0.5 w-5 shrink-0" />
+                        <li
+                          aria-hidden="true"
+                          className={`h-px w-6 shrink-0 ${isLit ? laneStyle.connector : 'bg-white/10'}`}
+                        />
                       )}
                       <li
-                        className={`text-dash-body rounded-full border-2 px-4 py-1.5 font-semibold whitespace-nowrap transition-colors duration-200 ${getStageClassName(status, lane)}`}
+                        className={`text-dash-body rounded-full border px-4 py-1.5 font-semibold whitespace-nowrap transition-colors duration-200 ${getStageClassName(status, lane)}`}
                       >
                         {displayLabel}
                       </li>

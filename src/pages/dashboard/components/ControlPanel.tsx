@@ -59,7 +59,7 @@ const ControlPanel = ({
   return (
     <aside
       aria-label="시연 컨트롤 패널"
-      className="border-dash-accent/60 bg-dash-surface/95 fixed right-5 bottom-5 z-20 w-96 rounded-2xl border p-4 shadow-2xl backdrop-blur"
+      className="dash-card border-dash-accent/40 fixed right-5 bottom-5 z-20 w-96 p-4 shadow-2xl backdrop-blur"
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-dash-body text-dash-accent font-bold">컨트롤 패널</h2>
