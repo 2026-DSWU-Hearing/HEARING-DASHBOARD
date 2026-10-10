@@ -31,6 +31,7 @@ pnpm dev
 | `pnpm preview`   | 빌드 결과 미리보기       |
 | `pnpm lint`      | oxlint 실행              |
 | `pnpm typecheck` | tsc 타입체크             |
+| `pnpm test`      | vitest 단위 테스트       |
 | `pnpm format`    | Prettier 포맷팅          |
 
 ## 폴더 구조
@@ -41,7 +42,7 @@ project-root
 │   └── icons
 └── src
     ├── layout    # 공통 레이아웃 컴포넌트
-    ├── pages     # 라우팅 페이지 (communication / home / livesound / setting)
+    ├── pages     # 라우팅 페이지 (communication / dashboard / home / livesound / setting)
     │   └── home
     │       ├── apis · components · constants · hooks · types · utils
     ├── routes    # 라우팅 설정
@@ -49,6 +50,14 @@ project-root
         ├── apis · assets · components · constants · hooks
         ├── stores · styles · types · utils
 ```
+
+## 시연용 대시보드 (`/dashboard`)
+
+발표 시연 중 청중용 모니터에 띄우는 페이지입니다. 네비게이션에 노출되지 않으며 URL로 직접 접근합니다.
+
+- 진입 시 리플레이 모드 + `full-day` 시나리오가 선택된 상태 (자동 재생 없음)
+- 단축키: `space` 재생/정지 · `1~4` 단일 시나리오 즉시 발화 · `c` 컨트롤 패널
+- 실제 WebSocket 연결은 `src/pages/dashboard/apis/dashboardSocket.ts` 구현 후 활성화 예정 (v1 은 인터페이스만)
 
 `@/` 경로 별칭은 `src/`를 가리킵니다. 자세한 구조와 규칙은 [CLAUDE.md](./CLAUDE.md), [docs/conventions.md](./docs/conventions.md)를 참고하세요.
 
