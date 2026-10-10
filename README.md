@@ -1,6 +1,6 @@
 # HEARING-DASHBOARD
 
-Hear:ing (청각장애인 대상 PWA 웹앱) 발표용 대시보드
+Hear:ing 프로젝트 발표용 대시보드
 
 ## 기술 스택
 
