@@ -1,4 +1,4 @@
-# Projct: Hear:ing (청각장애인 대상 pwa 웹앱)
+# Project: Hear:ing Dashboard (청각장애인 대상 소리 감지 서비스 Hear:ing 발표용 대시보드)
 
 ## Critical Rules (절대 규칙)
 
