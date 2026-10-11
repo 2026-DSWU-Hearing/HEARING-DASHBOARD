@@ -8,21 +8,22 @@ import {
   CAMERA_ELEVATION_RAD,
   CAMERA_FOV,
   CAMERA_SWAY_RAD,
+  COMPASS_RADIUS,
   DIRECTION_VECTORS,
   MOTOR_CURVE_POSITIONS,
   SCENE_COLORS,
   SCENE_TARGET,
   SOUND_WAVE_DISTANCE,
+  SOUND_WAVE_HEIGHT,
   VIBRATION_PULSE_DURATION_S,
 } from '../constants/neckbandScene'
 import type { VibrationDirectionTypes } from '../types/dashboardTypes'
+import { createBustGeometry, EAR_PLACEMENTS, EAR_SCALE } from '../utils/mannequinGeometry'
 import {
-  createBaseGeometry,
   createGlowTexture,
   createLabelTexture,
   createNeckbandCurve,
   createNeckbandTubeGeometry,
-  createShoulderGeometry,
   getCurveFrame,
 } from '../utils/neckbandGeometry'
 
@@ -82,32 +83,32 @@ const CameraRig = ({ activeDirection }: { activeDirection: VibrationDirectionTyp
 const Mannequin = () => {
   const material = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: SCENE_COLORS.mannequin,
-        roughness: 0.5,
-        metalness: 0.15,
+        roughness: 0.62,
+        metalness: 0.05,
+        clearcoat: 0.15,
+        clearcoatRoughness: 0.5,
       }),
     [],
   )
-  const baseGeometry = useMemo(() => createBaseGeometry(), [])
-  const shoulderGeometry = useMemo(() => createShoulderGeometry(), [])
+  const bustGeometry = useMemo(() => createBustGeometry(), [])
 
   return (
     <group>
-      <mesh geometry={baseGeometry} material={material} castShadow receiveShadow />
-      <mesh geometry={shoulderGeometry} material={material} castShadow receiveShadow />
-      <mesh material={material} position={[0, 1.36, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.3, 0.34, 0.52, 48]} />
-      </mesh>
-      <mesh
-        material={material}
-        position={[0, 2.0, 0]}
-        scale={[0.95, 1.2, 1.02]}
-        castShadow
-        receiveShadow
-      >
-        <sphereGeometry args={[0.5, 64, 48]} />
-      </mesh>
+      <mesh geometry={bustGeometry} material={material} castShadow receiveShadow />
+      {EAR_PLACEMENTS.map(({ position, rotation }) => (
+        <mesh
+          key={position[0]}
+          material={material}
+          position={position}
+          rotation={rotation}
+          scale={EAR_SCALE}
+          castShadow
+        >
+          <sphereGeometry args={[1, 32, 24]} />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -273,7 +274,7 @@ const SoundWaves = ({ activeDirection, isVibrating, pulseRef }: SoundWavesPropTy
 
   return (
     <group
-      position={[x * SOUND_WAVE_DISTANCE, 1.0, z * SOUND_WAVE_DISTANCE]}
+      position={[x * SOUND_WAVE_DISTANCE, SOUND_WAVE_HEIGHT, z * SOUND_WAVE_DISTANCE]}
       rotation={[0, rotationY, 0]}
     >
       {WAVE_RADII.map((radius, index) => (
@@ -293,8 +294,6 @@ const SoundWaves = ({ activeDirection, isVibrating, pulseRef }: SoundWavesPropTy
     </group>
   )
 }
-
-const COMPASS_RADIUS = 1.95
 
 const CompassLabels = () => {
   const labels = useMemo(

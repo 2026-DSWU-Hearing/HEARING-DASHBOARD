@@ -105,56 +105,6 @@ export const getCurveFrame = (curve: THREE.Curve<THREE.Vector3>, u: number): Cur
   return { position, quaternion }
 }
 
-/** 마네킹 받침 (모서리 둥근 직육면체) */
-export const createBaseGeometry = () => {
-  const width = 1.7
-  const depth = 1.15
-  const cornerRadius = 0.22
-  const height = 0.3
-  const bevel = 0.08
-  const left = -width / 2
-  const bottom = -depth / 2
-
-  const shape = new THREE.Shape()
-  shape.moveTo(left + cornerRadius, bottom)
-  shape.lineTo(left + width - cornerRadius, bottom)
-  shape.quadraticCurveTo(left + width, bottom, left + width, bottom + cornerRadius)
-  shape.lineTo(left + width, bottom + depth - cornerRadius)
-  shape.quadraticCurveTo(left + width, bottom + depth, left + width - cornerRadius, bottom + depth)
-  shape.lineTo(left + cornerRadius, bottom + depth)
-  shape.quadraticCurveTo(left, bottom + depth, left, bottom + depth - cornerRadius)
-  shape.lineTo(left, bottom + cornerRadius)
-  shape.quadraticCurveTo(left, bottom, left + cornerRadius, bottom)
-
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: height,
-    bevelEnabled: true,
-    bevelThickness: bevel,
-    bevelSize: bevel,
-    bevelSegments: 5,
-    curveSegments: 16,
-  })
-  geometry.rotateX(-Math.PI / 2)
-  geometry.translate(0, bevel, 0)
-  return geometry
-}
-
-/** 목에서 어깨로 퍼지는 곡면 (lathe 후 가로로 늘려 어깨 폭 표현) */
-export const createShoulderGeometry = () => {
-  const profile = [
-    new THREE.Vector2(0.56, 0.44),
-    new THREE.Vector2(0.56, 0.52),
-    new THREE.Vector2(0.54, 0.62),
-    new THREE.Vector2(0.49, 0.74),
-    new THREE.Vector2(0.41, 0.86),
-    new THREE.Vector2(0.35, 0.98),
-    new THREE.Vector2(0.33, 1.12),
-  ]
-  const geometry = new THREE.LatheGeometry(profile, 72)
-  geometry.scale(1.5, 1, 1)
-  return geometry
-}
-
 /** 한글 라벨용 캔버스 텍스처 (스프라이트) */
 export const createLabelTexture = (text: string, color: string) => {
   const size = 128
