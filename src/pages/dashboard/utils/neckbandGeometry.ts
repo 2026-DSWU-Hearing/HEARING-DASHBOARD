@@ -1,9 +1,6 @@
 import * as THREE from 'three'
+import { NECKBAND_FIT } from '../constants/neckbandScene'
 
-const NECKBAND_CENTER_Y = 1.04
-const NECKBAND_RADIUS = 0.62
-const START_ANGLE_DEG = 55
-const SPAN_DEG = 290
 const TUBE_RADIUS = 0.08
 const TUBULAR_SEGMENTS = 260
 const RADIAL_SEGMENTS = 28
@@ -26,12 +23,13 @@ const smoothstep = (edge0: number, edge1: number, value: number) => {
 const getNeckbandPoint = (t: number) => {
   const mirrored = Math.min(t, 1 - t)
   const endWeight = 1 - smoothstep(0, 0.36, mirrored) // 양 끝 1, 뒤쪽 0
-  const angle = THREE.MathUtils.degToRad(START_ANGLE_DEG - SPAN_DEG * t)
-  const radius = NECKBAND_RADIUS + 0.14 * endWeight
+  const { centerY, radius: baseRadius, endDrop, endFlare, startAngleDeg, spanDeg } = NECKBAND_FIT
+  const angle = THREE.MathUtils.degToRad(startAngleDeg - spanDeg * t)
+  const radius = baseRadius + endFlare * endWeight
 
   return new THREE.Vector3(
     radius * Math.cos(angle),
-    NECKBAND_CENTER_Y - 0.3 * endWeight,
+    centerY - endDrop * endWeight,
     radius * Math.sin(angle),
   )
 }

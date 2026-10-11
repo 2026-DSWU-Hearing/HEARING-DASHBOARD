@@ -58,6 +58,7 @@ project-root
 - 진입 시 리플레이 모드 + `full-day` 시나리오가 선택된 상태 (자동 재생 없음)
 - 단축키: `space` 재생/정지 · `1~4` 단일 시나리오 즉시 발화 · `c` 컨트롤 패널
 - 실제 WebSocket 연결은 `src/pages/dashboard/apis/dashboardSocket.ts` 구현 후 활성화 예정 (v1 은 인터페이스만)
+- 진동 방향 뷰는 three.js 3D 씬. 사람 흉상은 `public/models/mannequin.glb` (원본 8MB → gltf-transform 으로 간략화 + meshopt 압축 450KB). 모델을 바꾸면 `constants/neckbandScene.ts` 의 `NECKBAND_FIT` 으로 넥밴드 위치를 맞춘다
 
 `@/` 경로 별칭은 `src/`를 가리킵니다. 자세한 구조와 규칙은 [CLAUDE.md](./CLAUDE.md), [docs/conventions.md](./docs/conventions.md)를 참고하세요.
 

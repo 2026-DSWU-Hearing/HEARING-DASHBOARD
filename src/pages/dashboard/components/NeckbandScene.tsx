@@ -1,6 +1,16 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, useRef, type RefObject } from 'react'
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import * as THREE from 'three'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DASHBOARD_THEME } from '../constants/dashboardTheme'
 import {
   CAMERA_AZIMUTH_BY_DIRECTION,
@@ -10,6 +20,8 @@ import {
   CAMERA_SWAY_RAD,
   COMPASS_RADIUS,
   DIRECTION_VECTORS,
+  MANNEQUIN_MODEL_URL,
+  MANNEQUIN_TARGET_HEIGHT,
   MOTOR_CURVE_POSITIONS,
   SCENE_COLORS,
   SCENE_TARGET,
@@ -80,8 +92,8 @@ const CameraRig = ({ activeDirection }: { activeDirection: VibrationDirectionTyp
   return null
 }
 
-const Mannequin = () => {
-  const material = useMemo(
+const useMannequinMaterial = () =>
+  useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
         color: SCENE_COLORS.mannequin,
@@ -92,6 +104,9 @@ const Mannequin = () => {
       }),
     [],
   )
+
+/** GLB 가 없거나 로딩 중일 때 쓰는 절차적 흉상 */
+const ProceduralBust = ({ material }: { material: THREE.Material }) => {
   const bustGeometry = useMemo(() => createBustGeometry(), [])
 
   return (
@@ -110,6 +125,79 @@ const Mannequin = () => {
         </mesh>
       ))}
     </group>
+  )
+}
+
+const configureGltfLoader = (loader: GLTFLoader) => {
+  loader.setMeshoptDecoder(MeshoptDecoder)
+}
+
+/** 사람 흉상 GLB: 바닥이 y 0, 전체 높이 MANNEQUIN_TARGET_HEIGHT 가 되도록 정규화 */
+const MannequinModel = ({ material }: { material: THREE.Material }) => {
+  const gltf = useLoader(GLTFLoader, MANNEQUIN_MODEL_URL, configureGltfLoader)
+
+  const { scene, position, scale } = useMemo(() => {
+    const loadedScene = gltf.scene
+    loadedScene.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return
+      if (!object.geometry.getAttribute('normal')) object.geometry.computeVertexNormals()
+      object.material = material
+      object.castShadow = true
+      object.receiveShadow = true
+    })
+    loadedScene.updateMatrixWorld(true)
+
+    const bounds = new THREE.Box3().setFromObject(loadedScene)
+    const size = bounds.getSize(new THREE.Vector3())
+    const center = bounds.getCenter(new THREE.Vector3())
+    const fitScale = MANNEQUIN_TARGET_HEIGHT / size.y
+
+    return {
+      scene: loadedScene,
+      scale: fitScale,
+      position: [-center.x * fitScale, -bounds.min.y * fitScale, -center.z * fitScale] as [
+        number,
+        number,
+        number,
+      ],
+    }
+  }, [gltf, material])
+
+  return <primitive object={scene} position={position} scale={scale} />
+}
+
+interface ModelErrorBoundaryPropTypes {
+  fallback: ReactNode
+  children: ReactNode
+}
+
+/** GLB 로딩 실패 시 절차적 흉상으로 대체 (Canvas 안에서 동작) */
+class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasError: boolean }> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn('[NeckbandScene] 흉상 GLB 로딩 실패, 절차적 흉상으로 대체합니다.', error)
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children
+  }
+}
+
+const Mannequin = () => {
+  const material = useMannequinMaterial()
+  const fallback = <ProceduralBust material={material} />
+
+  return (
+    <ModelErrorBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <MannequinModel material={material} />
+      </Suspense>
+    </ModelErrorBoundary>
   )
 }
 
@@ -362,8 +450,8 @@ const INITIAL_CAMERA_POSITION: [number, number, number] = [
 ]
 
 /**
- * 마네킹이 넥밴드를 착용한 3D 씬.
- * TODO: 실제 넥밴드 · 마네킹 GLB 가 준비되면 Neckband / Mannequin 을 useLoader(GLTFLoader) 로 교체
+ * 사람 흉상(public/models/mannequin.glb)이 넥밴드를 착용한 3D 씬.
+ * 넥밴드는 절차적 모델 — 실제 넥밴드 GLB 가 준비되면 Neckband 를 같은 방식(useLoader)으로 교체
  */
 const NeckbandScene = ({ activeDirection, isVibrating, pulseKey }: NeckbandScenePropTypes) => {
   const pulseRef = useRef<PulseStateTypes | null>(null)

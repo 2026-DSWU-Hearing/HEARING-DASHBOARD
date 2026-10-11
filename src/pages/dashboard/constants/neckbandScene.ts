@@ -1,9 +1,9 @@
 import type { VibrationDirectionTypes } from '../types/dashboardTypes'
 
 /** 카메라가 공전하는 중심점 (착용자 목 부근) */
-export const SCENE_TARGET: [number, number, number] = [0, 1.3, 0]
-export const CAMERA_DISTANCE = 6.6
-export const CAMERA_ELEVATION_RAD = 0.4
+export const SCENE_TARGET: [number, number, number] = [0, 1.4, 0]
+export const CAMERA_DISTANCE = 6.4
+export const CAMERA_ELEVATION_RAD = 0.38
 export const CAMERA_FOV = 30
 export const CAMERA_SWAY_RAD = 0.08
 
@@ -41,7 +41,7 @@ export const MOTOR_CURVE_POSITIONS: Record<'LEFT' | 'RIGHT' | 'BACK', number> = 
 
 export const VIBRATION_PULSE_DURATION_S = 1.8
 export const SOUND_WAVE_DISTANCE = 1.9
-export const SOUND_WAVE_HEIGHT = 1.2
+export const SOUND_WAVE_HEIGHT = 1.5
 export const COMPASS_RADIUS = 2.3
 
 export const SCENE_COLORS = {
@@ -51,4 +51,19 @@ export const SCENE_COLORS = {
   motorGlow: '#ff2a1a',
   label: '#8b93a5',
   ring: '#2c3240',
+} as const
+
+/** 사람 흉상 GLB (Meshy 생성, gltf-transform 으로 간략화 + meshopt 압축). 없거나 실패하면 절차적 흉상으로 대체 */
+export const MANNEQUIN_MODEL_URL = `${import.meta.env.BASE_URL}models/mannequin.glb`
+/** 모델 전체 높이를 이 값(씬 단위)으로 맞춘다. 바닥 = y 0 */
+export const MANNEQUIN_TARGET_HEIGHT = 2.85
+
+/** 넥밴드를 흉상 목에 맞추는 값 (GLB 흉상 기준) */
+export const NECKBAND_FIT = {
+  centerY: 1.47, // 목 밑동 높이
+  radius: 0.58, // 뒤쪽 반지름 (목 뒤 여유 포함)
+  endDrop: 0.4, // 양 끝이 가슴 쪽으로 내려오는 높이
+  endFlare: 0.02, // 양 끝 반지름 추가
+  startAngleDeg: 62, // 왼쪽 끝 각도 (xz 평면, +x 기준 반시계)
+  spanDeg: 304, // 뒤쪽으로 감기는 각도 범위
 } as const
