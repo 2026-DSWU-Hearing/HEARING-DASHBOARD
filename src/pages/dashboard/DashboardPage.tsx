@@ -43,6 +43,13 @@ const DashboardContent = () => {
   const { start, stop, isPlaying, fireScenario } = useDashboardEvents(selectedScenario)
   usePipelineAnimation(activeEvent)
 
+  // 파이프라인이 '진동 + 푸시' 단계에 도달한 순간부터 모터 발광 (필터링 이벤트는 없음)
+  const isNotified =
+    activeEvent !== null &&
+    activeEvent.isMatched &&
+    (activeStage === 'notified' || activeStage === null)
+  const vibrationPulseKey = isNotified ? activeEvent.id : null
+
   const handleControlPanelToggle = useCallback(() => {
     setIsControlPanelOpen((isOpen) => !isOpen)
   }, [])
@@ -112,6 +119,7 @@ const DashboardContent = () => {
           activeDirection={activeEvent ? activeEvent.direction : null}
           activeLabel={getDirectionLabel(activeEvent)}
           isVibrating={activeEvent?.isMatched ?? false}
+          vibrationPulseKey={vibrationPulseKey}
         />
         <PipelineView activeEvent={activeEvent} activeStage={activeStage} />
       </section>

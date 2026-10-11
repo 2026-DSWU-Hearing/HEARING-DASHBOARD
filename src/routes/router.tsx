@@ -2,8 +2,11 @@ import { createBrowserRouter, type RouteObject } from 'react-router'
 import HomePage from '@/pages/home/HomePage'
 
 // 발표용 페이지: 별도 청크로 lazy loading, 네비게이션에는 노출하지 않음 (URL 직접 접근)
+const EmptyFallback = () => null
+
 const dashboardRoute: RouteObject = {
   path: '/dashboard',
+  HydrateFallback: EmptyFallback,
   lazy: async () => {
     const { default: DashboardPage } = await import('@/pages/dashboard/DashboardPage')
     return { Component: DashboardPage }
