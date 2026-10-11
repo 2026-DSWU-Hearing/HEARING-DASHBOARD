@@ -53,8 +53,12 @@ export const SCENE_COLORS = {
   ring: '#2c3240',
 } as const
 
-/** 사람 흉상 GLB (Meshy 생성, gltf-transform 으로 간략화 + meshopt 압축). 없거나 실패하면 절차적 흉상으로 대체 */
-export const MANNEQUIN_MODEL_URL = `${import.meta.env.BASE_URL}models/mannequin.glb`
+/**
+ * 사람 흉상 GLB (gltf-transform 으로 간략화 + meshopt 압축). 없거나 실패하면 절차적 흉상으로 대체.
+ * VITE_MANNEQUIN_MODEL_URL 로 다른 경로(CDN 등)를 지정할 수 있다.
+ */
+export const MANNEQUIN_MODEL_URL: string =
+  import.meta.env.VITE_MANNEQUIN_MODEL_URL || `${import.meta.env.BASE_URL}models/mannequin.glb`
 /** 모델 전체 높이를 이 값(씬 단위)으로 맞춘다. 바닥 = y 0 */
 export const MANNEQUIN_TARGET_HEIGHT = 2.85
 
