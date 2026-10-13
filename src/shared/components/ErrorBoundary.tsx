@@ -3,6 +3,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 interface ErrorBoundaryPropTypes {
   children: ReactNode
   fallbackLabel?: string
+  /** 지정하면 전체 화면 안내 대신 이 노드를 그린다 (부분 영역 대체용) */
+  fallback?: ReactNode
 }
 
 interface ErrorBoundaryStateTypes {
@@ -26,8 +28,10 @@ class ErrorBoundary extends Component<ErrorBoundaryPropTypes, ErrorBoundaryState
   }
 
   render() {
-    const { children, fallbackLabel = '문제가 발생했습니다.' } = this.props
+    const { children, fallbackLabel = '문제가 발생했습니다.', fallback } = this.props
     const { hasError, resetCount } = this.state
+
+    if (hasError && fallback !== undefined) return fallback
 
     if (hasError) {
       return (

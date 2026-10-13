@@ -1,5 +1,9 @@
+import { useMemo } from 'react'
+import ErrorBoundary from '@/shared/components/ErrorBoundary'
 import { DIRECTION_LABELS } from '../constants/directionLabels'
 import type { VibrationDirectionTypes } from '../types/dashboardTypes'
+import { isWebGlAvailable } from '../utils/isWebGlAvailable'
+import NeckbandDiagram from './NeckbandDiagram'
 import NeckbandScene from './NeckbandScene'
 
 interface VibrationDirectionViewPropTypes {
@@ -15,46 +19,58 @@ const VibrationDirectionView = ({
   activeLabel,
   isVibrating,
   vibrationPulseKey,
-}: VibrationDirectionViewPropTypes) => (
-  <section className="dash-card relative flex min-h-0 flex-col overflow-hidden px-5 pt-4 pb-3">
-    <p className="dash-eyebrow relative z-10">진동 방향</p>
+}: VibrationDirectionViewPropTypes) => {
+  // WebGL 이 없으면(원격 데스크톱 · GPU 가속 off 등) 3D 대신 2D 도식. 3D 가 도중에 실패해도 도식으로 대체
+  const canRender3d = useMemo(() => isWebGlAvailable(), [])
+  const diagram = <NeckbandDiagram activeDirection={activeDirection} isVibrating={isVibrating} />
 
-    <div className="dash:min-h-[340px] relative min-h-[26vh] flex-1">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(55%_60%_at_50%_55%,rgba(255,255,255,0.05),transparent_70%)]"
-      />
-      <div className="absolute inset-0" role="img" aria-label={activeLabel}>
-        <NeckbandScene
-          activeDirection={activeDirection}
-          isVibrating={isVibrating}
-          pulseKey={vibrationPulseKey}
+  return (
+    <section className="dash-card relative flex min-h-0 flex-col overflow-hidden px-5 pt-4 pb-3">
+      <p className="dash-eyebrow relative z-10">진동 방향</p>
+
+      <div className="dash:min-h-[340px] relative min-h-[26vh] flex-1">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(55%_60%_at_50%_55%,rgba(255,255,255,0.05),transparent_70%)]"
         />
-      </div>
+        <div className="absolute inset-0" role="img" aria-label={activeLabel}>
+          {canRender3d ? (
+            <ErrorBoundary fallback={diagram}>
+              <NeckbandScene
+                activeDirection={activeDirection}
+                isVibrating={isVibrating}
+                pulseKey={vibrationPulseKey}
+              />
+            </ErrorBoundary>
+          ) : (
+            diagram
+          )}
+        </div>
 
-      <div className="pointer-events-none absolute right-0 bottom-0 z-10 max-w-[48%] text-right">
-        <p
-          className={`text-dash-metric leading-tight font-bold break-keep ${
-            activeDirection === null
-              ? 'text-dash-muted'
-              : isVibrating
-                ? 'text-dash-accent'
-                : 'text-dash-filtered'
-          }`}
-        >
-          {activeLabel}
-        </p>
-        {activeDirection !== null && !isVibrating && (
-          <p className="text-dash-label text-dash-muted mt-1">
-            {`${DIRECTION_LABELS[activeDirection]}에서 감지 · 모드 필터링`}
+        <div className="pointer-events-none absolute right-0 bottom-0 z-10 max-w-[48%] text-right">
+          <p
+            className={`text-dash-metric leading-tight font-bold break-keep ${
+              activeDirection === null
+                ? 'text-dash-muted'
+                : isVibrating
+                  ? 'text-dash-accent'
+                  : 'text-dash-filtered'
+            }`}
+          >
+            {activeLabel}
           </p>
-        )}
-        {activeDirection === 'FRONT' && isVibrating && (
-          <p className="text-dash-label text-dash-muted mt-1">앞쪽은 모터 없음 · 양쪽 알림</p>
-        )}
+          {activeDirection !== null && !isVibrating && (
+            <p className="text-dash-label text-dash-muted mt-1">
+              {`${DIRECTION_LABELS[activeDirection]}에서 감지 · 모드 필터링`}
+            </p>
+          )}
+          {activeDirection === 'FRONT' && isVibrating && (
+            <p className="text-dash-label text-dash-muted mt-1">앞쪽은 모터 없음 · 양쪽 알림</p>
+          )}
+        </div>
       </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 export default VibrationDirectionView
