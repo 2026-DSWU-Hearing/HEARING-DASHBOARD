@@ -1,3 +1,4 @@
+import { hasStoredRefreshToken } from '@/shared/stores/authStore'
 import {
   DEFAULT_BATTERY_PERCENT,
   DEFAULT_MODE_NAME,
@@ -6,15 +7,26 @@ import {
 import { MAX_EVENT_COUNT } from '../constants/dashboardTheme'
 import type { DashboardActionTypes, DashboardStateTypes } from '../types/dashboardTypes'
 
-export const createInitialDashboardState = (): DashboardStateTypes => ({
+/** 리플레이 모드에서 보여주는 시연용 상태 (라이브로 바뀌면 폴링값으로 덮어씀) */
+const DEMO_STATUS: Pick<
+  DashboardStateTypes,
+  'persona' | 'currentMode' | 'isDeviceConnected' | 'batteryPercent' | 'isDeviceActiveUser'
+> = {
   persona: DEMO_PERSONA,
   currentMode: DEFAULT_MODE_NAME,
   isDeviceConnected: true,
   batteryPercent: DEFAULT_BATTERY_PERCENT,
+  isDeviceActiveUser: true,
+}
+
+/** 로그인(refresh 토큰)이 남아 있으면 라이브로, 아니면 리플레이로 시작 */
+export const createInitialDashboardState = (): DashboardStateTypes => ({
+  ...DEMO_STATUS,
   events: [],
   activeEvent: null,
   activeStage: null,
-  isReplayMode: true,
+  isReplayMode: !hasStoredRefreshToken(),
+  liveConnectionStatus: 'idle',
 })
 
 export const dashboardReducer = (
@@ -43,10 +55,20 @@ export const dashboardReducer = (
       return {
         ...state,
         isDeviceConnected: action.isDeviceConnected ?? state.isDeviceConnected,
-        batteryPercent: action.batteryPercent ?? state.batteryPercent,
+        // null 도 유효한 값("보고 없음")이라 undefined 일 때만 유지
+        batteryPercent:
+          action.batteryPercent === undefined ? state.batteryPercent : action.batteryPercent,
+        isDeviceActiveUser: action.isDeviceActiveUser ?? state.isDeviceActiveUser,
       }
+    case 'PERSONA_CHANGED':
+      return { ...state, persona: { ...state.persona, name: action.name } }
+    case 'SOCKET_STATUS_CHANGED':
+      return { ...state, liveConnectionStatus: action.status }
     case 'REPLAY_TOGGLED':
-      return { ...state, isReplayMode: action.isReplayMode }
+      // 리플레이로 돌아가면 시연용 상태 복원, 라이브로 가면 폴링이 곧 채운다
+      return action.isReplayMode
+        ? { ...state, ...DEMO_STATUS, isReplayMode: true, liveConnectionStatus: 'idle' }
+        : { ...state, isReplayMode: false }
     case 'EVENTS_CLEARED':
       return { ...state, events: [], activeEvent: null, activeStage: null }
     default:

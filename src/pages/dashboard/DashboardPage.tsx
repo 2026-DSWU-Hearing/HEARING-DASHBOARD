@@ -9,9 +9,12 @@ import PipelineView from './components/PipelineView'
 import VibrationDirectionView from './components/VibrationDirectionView'
 import { DEFAULT_SCENARIO_ID, DEMO_SCENARIOS, getScenarioById } from './constants/demoScenarios'
 import { DIRECTION_LABELS } from './constants/directionLabels'
+import { LIVE_CONNECTION_DOT_CLASS, LIVE_CONNECTION_LABELS } from './constants/liveConnectionLabels'
 import { useDashboard } from './hooks/useDashboard'
+import { useDashboardAuth } from './hooks/useDashboardAuth'
 import { useDashboardEvents } from './hooks/useDashboardEvents'
 import { useDashboardShortcuts } from './hooks/useDashboardShortcuts'
+import { useLiveStatus } from './hooks/useLiveStatus'
 import { usePipelineAnimation } from './hooks/usePipelineAnimation'
 import type { DetectionEventTypes } from './types/dashboardTypes'
 
@@ -30,10 +33,12 @@ const DashboardContent = () => {
     currentMode,
     isDeviceConnected,
     batteryPercent,
+    isDeviceActiveUser,
     events,
     activeEvent,
     activeStage,
     isReplayMode,
+    liveConnectionStatus,
   } = state
 
   const [selectedScenarioId, setSelectedScenarioId] = useState(DEFAULT_SCENARIO_ID)
@@ -41,6 +46,15 @@ const DashboardContent = () => {
   const selectedScenario = getScenarioById(selectedScenarioId)
 
   const { start, stop, isPlaying, fireScenario } = useDashboardEvents(selectedScenario)
+  const {
+    isLoggedIn,
+    isLoginPending,
+    loginErrorMessage,
+    handleGoogleLoginSuccess,
+    handleGoogleLoginError,
+    handleLogoutClick,
+  } = useDashboardAuth()
+  useLiveStatus()
   usePipelineAnimation(activeEvent)
 
   // 파이프라인이 '진동 + 푸시' 단계에 도달한 순간부터 모터 발광 (필터링 이벤트는 없음)
@@ -54,9 +68,10 @@ const DashboardContent = () => {
     setIsControlPanelOpen((isOpen) => !isOpen)
   }, [])
   const handlePlayToggle = useCallback(() => {
+    if (!isReplayMode) return // 라이브에서는 재생/정지 없음
     if (isPlaying) stop()
     else start()
-  }, [isPlaying, start, stop])
+  }, [isReplayMode, isPlaying, start, stop])
   const handleScenarioFire = useCallback(
     (scenarioId: string) => fireScenario(scenarioId),
     [fireScenario],
@@ -77,8 +92,22 @@ const DashboardContent = () => {
     dispatch({ type: 'EVENTS_CLEARED' })
   }
   const handleModeNameChange = (modeName: string) => {
-    dispatch({ type: 'MODE_CHANGED', modeName })
+    if (isReplayMode) dispatch({ type: 'MODE_CHANGED', modeName })
   }
+  const handleReplayModeToggle = (nextIsReplayMode: boolean) => {
+    if (nextIsReplayMode === isReplayMode) return
+    stop()
+    dispatch({ type: 'REPLAY_TOGGLED', isReplayMode: nextIsReplayMode })
+  }
+
+  const headerBadgeLabel = isReplayMode
+    ? 'REPLAY'
+    : `LIVE · ${LIVE_CONNECTION_LABELS[isLoggedIn ? liveConnectionStatus : 'idle']}`
+  const headerDotClass = isReplayMode
+    ? isPlaying
+      ? 'bg-dash-success animate-dot-pulse'
+      : 'bg-dash-muted'
+    : LIVE_CONNECTION_DOT_CLASS[isLoggedIn ? liveConnectionStatus : 'idle']
 
   return (
     <div className="bg-dash-bg text-dash-text relative flex h-screen min-h-0 flex-col gap-3 overflow-y-auto px-5 pt-3 pb-4">
@@ -97,11 +126,8 @@ const DashboardContent = () => {
           <span className="text-dash-caption text-dash-muted">실시간 소리 감지 모니터</span>
         </div>
         <span className="text-dash-caption text-dash-muted inline-flex items-center gap-2 rounded-full border border-white/8 px-3 py-1 font-semibold tracking-wider">
-          <span
-            aria-hidden="true"
-            className={`size-1.5 rounded-full ${isPlaying ? 'bg-dash-success animate-dot-pulse' : 'bg-dash-muted'}`}
-          />
-          {isReplayMode ? 'REPLAY' : 'LIVE'}
+          <span aria-hidden="true" className={`size-1.5 rounded-full ${headerDotClass}`} />
+          {headerBadgeLabel}
         </span>
       </header>
 
@@ -111,6 +137,7 @@ const DashboardContent = () => {
           currentMode={currentMode}
           isDeviceConnected={isDeviceConnected}
           batteryPercent={batteryPercent}
+          isDeviceActiveUser={isDeviceActiveUser}
         />
       </div>
 
@@ -132,9 +159,18 @@ const DashboardContent = () => {
         isOpen={isControlPanelOpen}
         isReplayMode={isReplayMode}
         isPlaying={isPlaying}
+        isLoggedIn={isLoggedIn}
+        isLoginPending={isLoginPending}
+        loginErrorMessage={loginErrorMessage}
+        liveConnectionStatus={liveConnectionStatus}
+        wearerName={persona.name}
         scenarios={DEMO_SCENARIOS}
         selectedScenarioId={selectedScenarioId}
         modeName={currentMode}
+        onReplayModeToggle={handleReplayModeToggle}
+        onGoogleLoginSuccess={handleGoogleLoginSuccess}
+        onGoogleLoginError={handleGoogleLoginError}
+        onLogoutClick={handleLogoutClick}
         onScenarioChange={handleScenarioChange}
         onPlayClick={start}
         onStopClick={stop}

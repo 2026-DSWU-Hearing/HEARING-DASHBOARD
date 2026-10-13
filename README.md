@@ -55,9 +55,18 @@ project-root
 
 발표 시연 중 청중용 모니터에 띄우는 페이지입니다. 네비게이션에 노출되지 않으며 URL로 직접 접근합니다.
 
-- 진입 시 리플레이 모드 + `full-day` 시나리오가 선택된 상태 (자동 재생 없음)
-- 단축키: `space` 재생/정지 · `1~4` 단일 시나리오 즉시 발화 · `c` 컨트롤 패널
-- 실제 WebSocket 연결은 `src/pages/dashboard/apis/dashboardSocket.ts` 구현 후 활성화 예정 (v1 은 인터페이스만)
+- 로그인(refresh 토큰)이 남아 있으면 라이브, 아니면 리플레이 모드 + `full-day` 시나리오로 시작 (자동 재생 없음)
+- 단축키: `space` 재생/정지(리플레이) · `1~4` 단일 시나리오 즉시 발화(두 모드 모두, 라이브에선 비상용) · `c` 컨트롤 패널
+
+### 라이브 연결
+
+1. 컨트롤 패널(`c`) → **라이브** → 구글 로그인. 넥밴드의 현재 사용자(앱에서 [기기 연결]을 누른 계정)와 같은 구글 계정이어야 감지가 온다
+2. 연결: `/ws/users/me/detections?token=` WebSocket (`detection` · `detection_filtered`), 현재 모드 · 연결 · 배터리 · 이름은 `GET /modes` · `GET /devices` · `GET /users/me` 를 5초마다 폴링
+3. access 토큰 만료(60분)는 `/auth/refresh` 로 자동 갱신, 재접속은 지수 백오프(1→30초). 로그아웃하면 리플레이로 돌아간다
+4. 주소는 `VITE_API_BASE_URL`(기본: dev `http://localhost:8000`, 빌드 `https://hearing-api.duckdns.org`), 로그인은 `VITE_GOOGLE_CLIENT_ID`(기본값은 앱과 같은 클라이언트)
+5. 배포 전 요청할 것: 백엔드 `.env` `CORS_ORIGINS` 에 대시보드 도메인 추가, 구글 OAuth 클라이언트 "승인된 JavaScript 원본"에 대시보드 도메인 추가
+6. 필터링 장면(`detection_filtered`)은 백엔드 `handle_detection` 에 브로드캐스트가 들어가면 자동으로 표시된다 (프론트는 준비됨)
+
 - 진동 방향 뷰는 three.js 3D 씬. 사람 흉상은 `public/models/mannequin.glb` (원본 8MB → gltf-transform 으로 간략화 + meshopt 압축 450KB). 모델을 바꾸면 `constants/neckbandScene.ts` 의 `NECKBAND_FIT` 으로 넥밴드 위치를 맞춘다
 
 `@/` 경로 별칭은 `src/`를 가리킵니다. 자세한 구조와 규칙은 [CLAUDE.md](./CLAUDE.md), [docs/conventions.md](./docs/conventions.md)를 참고하세요.

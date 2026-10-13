@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { useAuthStore } from '@/shared/stores/authStore'
 import { dashboardSocket } from '../apis/dashboardSocket'
 import { getScenarioById } from '../constants/demoScenarios'
 import type { ReplayScenarioTypes } from '../types/dashboardTypes'
@@ -11,28 +12,42 @@ import { materializeReplayStep, useReplay } from './useReplay'
  */
 export const useDashboardEvents = (scenario: ReplayScenarioTypes | null) => {
   const { state, dispatch } = useDashboard()
-  const { isReplayMode } = state
+  const { isReplayMode, currentMode } = state
+  const isLoggedIn = useAuthStore((store) => store.accessToken !== null)
+  const isLiveActive = !isReplayMode && isLoggedIn
   const replay = useReplay(isReplayMode ? scenario : null)
 
+  // 소켓 콜백이 이벤트 시점의 모드명을 읽도록 ref 로 전달 (effect 재구독 없이)
+  const currentModeRef = useRef(currentMode)
   useEffect(() => {
-    if (isReplayMode) return
-    // v1 에서는 isReplayMode 가 항상 true 라 호출되지 않음 (라이브 토글 disabled)
-    const unsubscribe = dashboardSocket.subscribe((event) => {
-      dispatch({ type: 'EVENT_RECEIVED', event })
-    })
-    return unsubscribe
-  }, [isReplayMode, dispatch])
+    currentModeRef.current = currentMode
+  }, [currentMode])
 
-  /** 단일 시나리오 즉시 발화 (숫자 키 1~4, 리허설 · 비상용). 진행 중 리플레이는 멈추지 않음 */
+  useEffect(() => {
+    if (!isLiveActive) {
+      dispatch({ type: 'SOCKET_STATUS_CHANGED', status: 'idle' })
+      return
+    }
+    const unsubscribe = dashboardSocket.subscribe(
+      (event) => dispatch({ type: 'EVENT_RECEIVED', event }),
+      {
+        getModeName: () => currentModeRef.current,
+        onStatusChange: (status) => dispatch({ type: 'SOCKET_STATUS_CHANGED', status }),
+      },
+    )
+    return unsubscribe
+  }, [isLiveActive, dispatch])
+
+  /** 단일 시나리오 즉시 발화 (숫자 키 1~4). 리허설용이자 라이브 중 하드웨어 문제 시 비상용이라 두 모드 모두 동작 */
   const fireScenario = useCallback(
     (scenarioId: string) => {
       const target = getScenarioById(scenarioId)
-      if (!target || !isReplayMode) return
+      if (!target) return
       target.steps.forEach((step) => {
         dispatch({ type: 'EVENT_RECEIVED', event: materializeReplayStep(step) })
       })
     },
-    [dispatch, isReplayMode],
+    [dispatch],
   )
 
   return { ...replay, fireScenario }

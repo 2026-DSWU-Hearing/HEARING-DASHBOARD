@@ -7,6 +7,10 @@ export type PipelineLaneTypes = 'emergency' | 'normal'
 
 export type FilterReasonTypes = 'not_in_mode' | 'no_active_mode'
 
+/** 라이브 WebSocket 연결 상태 */
+export type LiveConnectionStatusTypes =
+  'idle' | 'connecting' | 'connected' | 'reconnecting' | 'authFailed' | 'closed'
+
 export interface PersonaTypes {
   name: string
   description: string
@@ -30,11 +34,13 @@ export interface DashboardStateTypes {
   persona: PersonaTypes
   currentMode: string
   isDeviceConnected: boolean
-  batteryPercent: number
+  batteryPercent: number | null // null = 기기가 아직 배터리를 보고하지 않음
+  isDeviceActiveUser: boolean // false = 넥밴드가 다른 계정으로 연결됨 (감지가 이 계정으로 안 옴)
   events: DetectionEventTypes[] // 최신순, 최대 20개
   activeEvent: DetectionEventTypes | null
   activeStage: PipelineStageTypes | null
   isReplayMode: boolean
+  liveConnectionStatus: LiveConnectionStatusTypes
 }
 
 export interface ReplayStepTypes {
@@ -83,7 +89,10 @@ export type DashboardActionTypes =
   | {
       type: 'DEVICE_STATUS_CHANGED'
       isDeviceConnected?: boolean
-      batteryPercent?: number
+      batteryPercent?: number | null
+      isDeviceActiveUser?: boolean
     }
+  | { type: 'PERSONA_CHANGED'; name: string }
+  | { type: 'SOCKET_STATUS_CHANGED'; status: LiveConnectionStatusTypes }
   | { type: 'REPLAY_TOGGLED'; isReplayMode: boolean }
   | { type: 'EVENTS_CLEARED' }
