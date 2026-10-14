@@ -81,6 +81,16 @@ export type DetectionMessageTypes =
   | { type: 'detection'; data: DetectionMessageDataTypes }
   | { type: 'detection_filtered'; data: DetectionFilteredMessageDataTypes }
 
+/** 활성 모드 변경 — PATCH /modes/{id}/activate 시 백엔드가 같은 채널로 브로드캐스트 */
+export interface ModeChangedMessageDataTypes {
+  mode_id: number
+  name: string
+  is_active: boolean
+}
+
+export type DashboardSocketMessageTypes =
+  DetectionMessageTypes | { type: 'mode_changed'; data: ModeChangedMessageDataTypes }
+
 export type DashboardActionTypes =
   | { type: 'EVENT_RECEIVED'; event: DetectionEventTypes }
   | { type: 'STAGE_ADVANCED'; stage: PipelineStageTypes }

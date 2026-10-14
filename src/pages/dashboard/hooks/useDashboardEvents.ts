@@ -1,7 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef } from 'react'
 import { useAuthStore } from '@/shared/stores/authStore'
 import { dashboardSocket } from '../apis/dashboardSocket'
 import { getScenarioById } from '../constants/demoScenarios'
+import { LIVE_QUERY_KEYS } from '../constants/livePolling'
 import type { ReplayScenarioTypes } from '../types/dashboardTypes'
 import { useDashboard } from './useDashboard'
 import { materializeReplayStep, useReplay } from './useReplay'
@@ -12,6 +14,7 @@ import { materializeReplayStep, useReplay } from './useReplay'
  */
 export const useDashboardEvents = (scenario: ReplayScenarioTypes | null) => {
   const { state, dispatch } = useDashboard()
+  const queryClient = useQueryClient()
   const { isReplayMode, currentMode } = state
   const isLoggedIn = useAuthStore((store) => store.accessToken !== null)
   const isLiveActive = !isReplayMode && isLoggedIn
@@ -33,10 +36,15 @@ export const useDashboardEvents = (scenario: ReplayScenarioTypes | null) => {
       {
         getModeName: () => currentModeRef.current,
         onStatusChange: (status) => dispatch({ type: 'SOCKET_STATUS_CHANGED', status }),
+        onModeChanged: (modeName) => {
+          dispatch({ type: 'MODE_CHANGED', modeName })
+          // 폴링 캐시도 바로 맞춰 다음 폴링이 옛 값으로 되돌리지 않게
+          void queryClient.invalidateQueries({ queryKey: LIVE_QUERY_KEYS.modes })
+        },
       },
     )
     return unsubscribe
-  }, [isLiveActive, dispatch])
+  }, [isLiveActive, dispatch, queryClient])
 
   /** 단일 시나리오 즉시 발화 (숫자 키 1~4). 리허설용이자 라이브 중 하드웨어 문제 시 비상용이라 두 모드 모두 동작 */
   const fireScenario = useCallback(

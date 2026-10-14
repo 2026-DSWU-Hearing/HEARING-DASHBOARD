@@ -3,8 +3,8 @@ import { getStoredAccessToken } from '@/shared/stores/authStore'
 import { getWebSocketBaseUrl } from '@/shared/utils/getWebSocketBaseUrl'
 import { isTokenExpired } from '@/shared/utils/jwt'
 import type {
+  DashboardSocketMessageTypes,
   DetectionEventTypes,
-  DetectionMessageTypes,
   LiveConnectionStatusTypes,
 } from '../types/dashboardTypes'
 import { parseDetectionMessage } from '../utils/parseDetectionMessage'
@@ -21,15 +21,15 @@ const MAX_RECONNECT_DELAY_MS = 30_000
 const MAX_INITIAL_CONNECT_ATTEMPTS = 5
 const MAX_AUTH_REFRESH_ATTEMPTS = 2
 
-const HANDLED_MESSAGE_TYPES = new Set(['detection', 'detection_filtered'])
+const HANDLED_MESSAGE_TYPES = new Set(['detection', 'detection_filtered', 'mode_changed'])
 
 /** WS 텍스트 → 대시보드가 아는 메시지. 다른 type · 깨진 JSON 은 null */
-export const parseSocketMessage = (raw: string): DetectionMessageTypes | null => {
+export const parseSocketMessage = (raw: string): DashboardSocketMessageTypes | null => {
   try {
     const message = JSON.parse(raw) as { type?: unknown; data?: unknown }
     if (typeof message?.type !== 'string' || !HANDLED_MESSAGE_TYPES.has(message.type)) return null
     if (!message.data || typeof message.data !== 'object') return null
-    return message as DetectionMessageTypes
+    return message as DashboardSocketMessageTypes
   } catch {
     return null
   }
@@ -42,6 +42,8 @@ interface SubscribeOptionsTypes {
   /** 이벤트 시점의 활성 모드 이름 (폴링값) */
   getModeName: () => string
   onStatusChange?: (status: LiveConnectionStatusTypes) => void
+  /** 백엔드 mode_changed 수신 (폴링을 기다리지 않고 즉시 반영) */
+  onModeChanged?: (modeName: string) => void
 }
 
 const getValidAccessToken = async () => {
@@ -57,7 +59,7 @@ const getValidAccessToken = async () => {
 export const dashboardSocket = {
   subscribe: (
     onEvent: (event: DetectionEventTypes) => void,
-    { getModeName, onStatusChange }: SubscribeOptionsTypes,
+    { getModeName, onStatusChange, onModeChanged }: SubscribeOptionsTypes,
   ): (() => void) => {
     let socket: WebSocket | null = null
     let reconnectTimerId: number | null = null
@@ -99,6 +101,12 @@ export const dashboardSocket = {
       socket.onmessage = (messageEvent: MessageEvent<string>) => {
         const message = parseSocketMessage(messageEvent.data)
         if (!message) return
+        if (message.type === 'mode_changed') {
+          if (message.data.is_active && typeof message.data.name === 'string') {
+            onModeChanged?.(message.data.name)
+          }
+          return
+        }
         onEvent(parseDetectionMessage(message, getModeName()))
       }
 

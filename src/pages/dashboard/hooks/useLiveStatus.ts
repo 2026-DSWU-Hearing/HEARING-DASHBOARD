@@ -5,7 +5,8 @@ import { getDevices } from '../apis/getDevices'
 import { getModes } from '../apis/getModes'
 import { getUserMe } from '../apis/getUserMe'
 import {
-  LIVE_POLLING_INTERVAL_MS,
+  LIVE_DEVICE_POLLING_INTERVAL_MS,
+  LIVE_MODE_POLLING_INTERVAL_MS,
   LIVE_QUERY_KEYS,
   LIVE_USER_POLLING_INTERVAL_MS,
 } from '../constants/livePolling'
@@ -15,6 +16,8 @@ import { useDashboard } from './useDashboard'
 /**
  * 라이브 모드 + 로그인 상태에서만 GET /modes · /devices · /users/me 를 폴링해
  * 현재 모드 · 연결 · 배터리 · 착용자 이름을 상태에 반영한다.
+ * 청중 모니터에 띄운 창은 포커스가 없을 수 있어 refetchIntervalInBackground 를 켠다.
+ * (백엔드가 mode_changed 를 보내면 useDashboardEvents 가 즉시 반영하고 modes 쿼리를 무효화한다)
  */
 export const useLiveStatus = () => {
   const { state, dispatch } = useDashboard()
@@ -25,19 +28,22 @@ export const useLiveStatus = () => {
     queryKey: LIVE_QUERY_KEYS.modes,
     queryFn: getModes,
     enabled: isEnabled,
-    refetchInterval: LIVE_POLLING_INTERVAL_MS,
+    refetchInterval: LIVE_MODE_POLLING_INTERVAL_MS,
+    refetchIntervalInBackground: true,
   })
   const devicesQuery = useQuery({
     queryKey: LIVE_QUERY_KEYS.devices,
     queryFn: getDevices,
     enabled: isEnabled,
-    refetchInterval: LIVE_POLLING_INTERVAL_MS,
+    refetchInterval: LIVE_DEVICE_POLLING_INTERVAL_MS,
+    refetchIntervalInBackground: true,
   })
   const userMeQuery = useQuery({
     queryKey: LIVE_QUERY_KEYS.userMe,
     queryFn: getUserMe,
     enabled: isEnabled,
     refetchInterval: LIVE_USER_POLLING_INTERVAL_MS,
+    refetchIntervalInBackground: true,
   })
 
   useEffect(() => {
