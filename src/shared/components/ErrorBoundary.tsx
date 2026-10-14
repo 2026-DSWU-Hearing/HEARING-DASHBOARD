@@ -5,6 +5,7 @@ interface ErrorBoundaryPropTypes {
   fallbackLabel?: string
   /** 지정하면 전체 화면 안내 대신 이 노드를 그린다 (부분 영역 대체용) */
   fallback?: ReactNode
+  onError?: (error: Error) => void
 }
 
 interface ErrorBoundaryStateTypes {
@@ -21,6 +22,7 @@ class ErrorBoundary extends Component<ErrorBoundaryPropTypes, ErrorBoundaryState
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[ErrorBoundary]', error, errorInfo)
+    this.props.onError?.(error)
   }
 
   handleRestartClick = () => {

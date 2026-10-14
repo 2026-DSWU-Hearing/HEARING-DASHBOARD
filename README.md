@@ -67,6 +67,13 @@ project-root
 5. 배포 전 요청할 것: 백엔드 `.env` `CORS_ORIGINS` 에 대시보드 도메인 추가, 구글 OAuth 클라이언트 "승인된 JavaScript 원본"에 대시보드 도메인 추가
 6. 필터링 장면(`detection_filtered`)은 백엔드 `handle_detection` 에 브로드캐스트가 들어가면 자동으로 표시된다 (프론트는 준비됨)
 
+### 3D 흉상 대신 2D 도식이 보일 때
+
+- three.js 는 **WebGL 2** 가 필요하다. 카드 좌하단 캡션이 원인을 알려준다 (`WebGL 2 없음` 등)
+- Chrome/Edge: 설정 → 시스템 → "가능한 경우 그래픽 가속 사용" 켜고 재시작. `chrome://gpu` 에서 `WebGL2: Hardware accelerated` 확인
+- 원격 데스크톱 · 가상 머신 · 구형 GPU 드라이버에선 WebGL 2 가 꺼져 있을 수 있다 → 시연은 실물 노트북의 최신 Chrome 으로
+- `?view=3d` 는 사전 검사를 건너뛰고 3D 를 강제 시도, `?view=2d` 는 항상 도식 (리허설 비교용)
+
 - 진동 방향 뷰는 three.js 3D 씬. 사람 흉상은 `public/models/mannequin.glb` (원본 8MB → gltf-transform 으로 간략화 + meshopt 압축 450KB). 모델을 바꾸면 `constants/neckbandScene.ts` 의 `NECKBAND_FIT` 으로 넥밴드 위치를 맞춘다
 
 `@/` 경로 별칭은 `src/`를 가리킵니다. 자세한 구조와 규칙은 [CLAUDE.md](./CLAUDE.md), [docs/conventions.md](./docs/conventions.md)를 참고하세요.

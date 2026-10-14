@@ -469,7 +469,7 @@ const NeckbandScene = ({ activeDirection, isVibrating, pulseKey }: NeckbandScene
     <Canvas
       shadows="percentage"
       dpr={[1, 1.5]}
-      gl={{ alpha: true, antialias: true }}
+      gl={{ alpha: true, antialias: true, powerPreference: 'default' }}
       camera={{ fov: CAMERA_FOV, near: 0.1, far: 40, position: INITIAL_CAMERA_POSITION }}
     >
       <CameraRig activeDirection={activeDirection} />
