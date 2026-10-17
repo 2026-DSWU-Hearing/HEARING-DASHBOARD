@@ -75,6 +75,7 @@ project-root
 - `?view=3d` 는 사전 검사를 건너뛰고 3D 를 강제 시도, `?view=2d` 는 항상 도식 (리허설 비교용)
 
 - 진동 방향 뷰는 three.js 3D 씬. 사람 흉상은 `public/models/mannequin.glb` (원본 8MB → gltf-transform 으로 간략화 + meshopt 압축 450KB). 모델을 바꾸면 `constants/neckbandScene.ts` 의 `NECKBAND_FIT` 으로 넥밴드 위치를 맞춘다
+- 그 GLB 를 못 가져오거나 meshopt 디코더(WASM)가 막힌 환경에서는 번들에 내장된 같은 모델의 저폴리곤판(`src/pages/dashboard/assets/mannequinLowPoly.glb`, 160KB, 1.6만 삼각형)이 대신 뜬다. 재생성: `pnpm dlx @gltf-transform/cli optimize <원본.glb> mannequinLowPoly.glb --compress quantize --simplify-ratio 0.035 --simplify-error 0.002 --texture-compress false` (meshopt · draco 압축은 쓰지 않는다)
 
 `@/` 경로 별칭은 `src/`를 가리킵니다. 자세한 구조와 규칙은 [CLAUDE.md](./CLAUDE.md), [docs/conventions.md](./docs/conventions.md)를 참고하세요.
 

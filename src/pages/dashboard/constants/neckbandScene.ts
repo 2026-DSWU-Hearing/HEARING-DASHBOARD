@@ -54,7 +54,8 @@ export const SCENE_COLORS = {
 } as const
 
 /**
- * 사람 흉상 GLB (gltf-transform 으로 간략화 + meshopt 압축). 없거나 실패하면 절차적 흉상으로 대체.
+ * 사람 흉상 GLB (gltf-transform 으로 간략화 + meshopt 압축). 없거나 실패하면 번들에 내장된
+ * 같은 모델의 간략판(assets/mannequinLowPoly.glb, utils/loadEmbeddedMannequin.ts)으로 대체.
  * VITE_MANNEQUIN_MODEL_URL 로 다른 경로(CDN 등)를 지정할 수 있다.
  */
 export const MANNEQUIN_MODEL_URL: string =

@@ -2,6 +2,7 @@ import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import {
   Component,
   Suspense,
+  use,
   useEffect,
   useMemo,
   useRef,
@@ -10,7 +11,7 @@ import {
 } from 'react'
 import * as THREE from 'three'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DASHBOARD_THEME } from '../constants/dashboardTheme'
 import {
   CAMERA_AZIMUTH_BY_DIRECTION,
@@ -30,12 +31,7 @@ import {
   VIBRATION_PULSE_DURATION_S,
 } from '../constants/neckbandScene'
 import type { VibrationDirectionTypes } from '../types/dashboardTypes'
-import {
-  createBaseGeometry,
-  createShoulderGeometry,
-  HEAD_PLACEMENT,
-  NECK_PLACEMENT,
-} from '../utils/mannequinGeometry'
+import { getEmbeddedMannequinGltf } from '../utils/loadEmbeddedMannequin'
 import {
   createGlowTexture,
   createLabelTexture,
@@ -110,41 +106,17 @@ const useMannequinMaterial = () =>
     [],
   )
 
-/** GLB 가 없거나 로딩 중 · 실패했을 때 쓰는 단순 마네킹 (머리 · 목 · 어깨 · 받침) */
-const SimpleMannequin = ({ material }: { material: THREE.Material }) => {
-  const baseGeometry = useMemo(() => createBaseGeometry(), [])
-  const shoulderGeometry = useMemo(() => createShoulderGeometry(), [])
-
-  return (
-    <group>
-      <mesh geometry={baseGeometry} material={material} castShadow receiveShadow />
-      <mesh geometry={shoulderGeometry} material={material} castShadow receiveShadow />
-      <mesh material={material} position={NECK_PLACEMENT.position} castShadow receiveShadow>
-        <cylinderGeometry
-          args={[NECK_PLACEMENT.radiusTop, NECK_PLACEMENT.radiusBottom, NECK_PLACEMENT.height, 48]}
-        />
-      </mesh>
-      <mesh
-        material={material}
-        position={HEAD_PLACEMENT.position}
-        scale={HEAD_PLACEMENT.scale}
-        castShadow
-        receiveShadow
-      >
-        <sphereGeometry args={[HEAD_PLACEMENT.radius, 64, 48]} />
-      </mesh>
-    </group>
-  )
-}
-
 const configureGltfLoader = (loader: GLTFLoader) => {
   loader.setMeshoptDecoder(MeshoptDecoder)
 }
 
-/** 사람 흉상 GLB: 바닥이 y 0, 전체 높이 MANNEQUIN_TARGET_HEIGHT 가 되도록 정규화 */
-const MannequinModel = ({ material }: { material: THREE.Material }) => {
-  const gltf = useLoader(GLTFLoader, MANNEQUIN_MODEL_URL, configureGltfLoader)
+interface MannequinMeshPropTypes {
+  gltf: GLTF
+  material: THREE.Material
+}
 
+/** 흉상 GLTF 를 씬에 맞춘다: 재질 적용, 바닥이 y 0 · 전체 높이 MANNEQUIN_TARGET_HEIGHT 가 되도록 정규화 */
+const MannequinMesh = ({ gltf, material }: MannequinMeshPropTypes) => {
   const { scene, position, scale } = useMemo(() => {
     const loadedScene = gltf.scene
     loadedScene.traverse((object) => {
@@ -175,12 +147,24 @@ const MannequinModel = ({ material }: { material: THREE.Material }) => {
   return <primitive object={scene} position={position} scale={scale} />
 }
 
+/** 기본 흉상: public/models/mannequin.glb (meshopt 압축, 디코더 WASM 필요) */
+const MannequinModel = ({ material }: { material: THREE.Material }) => {
+  const gltf = useLoader(GLTFLoader, MANNEQUIN_MODEL_URL, configureGltfLoader)
+  return <MannequinMesh gltf={gltf} material={material} />
+}
+
+/** 내장 간략 흉상: 같은 모델의 저폴리곤판이 번들에 들어 있어 fetch · WASM 없이 뜬다 (로딩 중 · 실패 시 대체) */
+const EmbeddedMannequin = ({ material }: { material: THREE.Material }) => {
+  const gltf = use(getEmbeddedMannequinGltf())
+  return <MannequinMesh gltf={gltf} material={material} />
+}
+
 interface ModelErrorBoundaryPropTypes {
   fallback: ReactNode
   children: ReactNode
 }
 
-/** GLB 로딩 실패 시 절차적 흉상으로 대체 (Canvas 안에서 동작) */
+/** 기본 GLB 로딩 실패 시 내장 간략 흉상으로 대체 (Canvas 안에서 동작) */
 class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasError: boolean }> {
   state = { hasError: false }
 
@@ -189,7 +173,7 @@ class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasErr
   }
 
   componentDidCatch(error: Error) {
-    console.warn('[NeckbandScene] 흉상 GLB 로딩 실패, 단순 마네킹으로 대체합니다.', error)
+    console.warn('[NeckbandScene] 흉상 GLB 로딩 실패, 내장 간략 모델로 대체합니다.', error)
   }
 
   render() {
@@ -197,16 +181,22 @@ class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasErr
   }
 }
 
+/**
+ * 기본 GLB 가 뜰 때까지, 그리고 실패하면 내장 간략판을 보여준다.
+ * 내장판마저 실패하면(사실상 없음) 에러가 상위 ErrorBoundary 로 올라가 2D 도식이 된다.
+ */
 const Mannequin = () => {
   const material = useMannequinMaterial()
-  const fallback = <SimpleMannequin material={material} />
+  const embedded = <EmbeddedMannequin material={material} />
 
   return (
-    <ModelErrorBoundary fallback={fallback}>
-      <Suspense fallback={fallback}>
-        <MannequinModel material={material} />
-      </Suspense>
-    </ModelErrorBoundary>
+    <Suspense fallback={null}>
+      <ModelErrorBoundary fallback={embedded}>
+        <Suspense fallback={embedded}>
+          <MannequinModel material={material} />
+        </Suspense>
+      </ModelErrorBoundary>
+    </Suspense>
   )
 }
 
