@@ -10,14 +10,15 @@ export const CAMERA_SWAY_RAD = 0.08
 /**
  * 방향별 카메라 방위각 (0 = 착용자 정면, π = 뒤, 양수 = 착용자 왼쪽).
  * 진동 방향이 바뀌면 카메라가 해당 모터가 잘 보이는 각도로 돌아간다.
- * 좌 · 우 · 뒤는 등 뒤에서 보여 착용자의 좌우가 화면의 좌우와 일치하게 한다.
+ * 앞 · 좌 · 우는 정면 쪽에서(좌 · 우는 그 어깨 쪽으로 살짝 돌아서) 얼굴과 가슴 앞 모터가 보이게,
+ * 뒤는 등 뒤에서 뒷목 모터가 보이게 한다.
  */
 export const CAMERA_AZIMUTH_BY_DIRECTION: Record<VibrationDirectionTypes | 'IDLE', number> = {
   IDLE: -0.6,
   FRONT: 0.45,
   BACK: Math.PI,
-  LEFT: 2.05,
-  RIGHT: -2.05,
+  LEFT: 0.7,
+  RIGHT: -0.7,
   UNKNOWN: -0.6,
 }
 
