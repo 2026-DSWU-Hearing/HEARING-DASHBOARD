@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getActiveModeName, NO_ACTIVE_MODE_LABEL, toDeviceStatus } from './liveStatus'
+import { getActiveModeName, NO_ACTIVE_MODE_LABEL, toDeviceStatus, toPersona } from './liveStatus'
 
 describe('getActiveModeName', () => {
   it('is_active 인 모드 이름을 돌려준다', () => {
@@ -53,5 +53,32 @@ describe('toDeviceStatus', () => {
       batteryPercent: null,
       isDeviceActiveUser: false,
     })
+  })
+})
+
+describe('toPersona', () => {
+  const user = { id: 1, email: 'user@example.com', nickname: '김하은' }
+
+  it('장애 유형을 한글 라벨로 붙인다', () => {
+    expect(toPersona({ ...user, disability_type: 'HARD_OF_HEARING' })).toEqual({
+      name: '김하은',
+      description: '난청인 · Hear:ing 넥밴드 착용',
+    })
+    expect(toPersona({ ...user, disability_type: 'DEAF' }).description).toBe(
+      '농인 · Hear:ing 넥밴드 착용',
+    )
+  })
+
+  it('소문자로 와도 같은 라벨', () => {
+    expect(toPersona({ ...user, disability_type: 'deaf' }).description).toBe(
+      '농인 · Hear:ing 넥밴드 착용',
+    )
+  })
+
+  it('유형이 없거나 모르는 값이면 착용 문구만', () => {
+    expect(toPersona({ ...user, disability_type: null }).description).toBe('Hear:ing 넥밴드 착용')
+    expect(toPersona({ ...user, disability_type: 'OTHER' }).description).toBe(
+      'Hear:ing 넥밴드 착용',
+    )
   })
 })

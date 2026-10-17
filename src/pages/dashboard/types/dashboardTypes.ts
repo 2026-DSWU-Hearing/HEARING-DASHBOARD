@@ -104,7 +104,7 @@ export type DashboardActionTypes =
       batteryPercent?: number | null
       isDeviceActiveUser?: boolean
     }
-  | { type: 'PERSONA_CHANGED'; name: string }
+  | { type: 'PERSONA_CHANGED'; persona: PersonaTypes }
   | { type: 'SOCKET_STATUS_CHANGED'; status: LiveConnectionStatusTypes }
   | { type: 'REPLAY_TOGGLED'; isReplayMode: boolean }
   | { type: 'EVENTS_CLEARED' }

@@ -62,7 +62,7 @@ export const dashboardReducer = (
         isDeviceActiveUser: action.isDeviceActiveUser ?? state.isDeviceActiveUser,
       }
     case 'PERSONA_CHANGED':
-      return { ...state, persona: { ...state.persona, name: action.name } }
+      return { ...state, persona: action.persona }
     case 'SOCKET_STATUS_CHANGED':
       return { ...state, liveConnectionStatus: action.status }
     case 'REPLAY_TOGGLED':
