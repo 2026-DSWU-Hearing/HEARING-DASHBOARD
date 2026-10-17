@@ -62,7 +62,7 @@ project-root
 ### 라이브 연결
 
 1. 컨트롤 패널(`c`) → **라이브** → 구글 로그인. 넥밴드의 현재 사용자(앱에서 [기기 연결]을 누른 계정)와 같은 구글 계정이어야 감지가 온다
-2. 연결: `/ws/users/me/detections?token=` WebSocket (`detection` · `detection_filtered` · `mode_changed`), 현재 모드 · 연결 · 배터리 · 이름은 `GET /modes`(1.5초) · `GET /devices`(3초) · `GET /users/me`(60초) 폴링. 백엔드가 `mode_changed` 를 보내면 폴링을 기다리지 않고 즉시 반영
+2. 연결: `/ws/users/me/detections?token=` WebSocket (`detection` · `detection_filtered` · `mode_changed`), 현재 모드 · 연결 · 배터리 · 이름 · 장애 유형(난청인/농인)은 `GET /modes`(1.5초) · `GET /devices`(3초) · `GET /users/me`(60초) 폴링. 백엔드가 `mode_changed` 를 보내면 폴링을 기다리지 않고 즉시 반영
 3. access 토큰 만료(60분)는 `/auth/refresh` 로 자동 갱신, 재접속은 지수 백오프(1→30초). 로그아웃하면 리플레이로 돌아간다
 4. 주소는 `VITE_API_BASE_URL`(기본 `https://hearing-api.duckdns.org`, 로컬 백엔드는 `http://localhost:8000` 지정), 로그인은 `VITE_GOOGLE_CLIENT_ID`(기본값은 앱과 같은 클라이언트)
 5. 배포 전 요청할 것: 백엔드 `.env` `CORS_ORIGINS` 에 대시보드 도메인 추가, 구글 OAuth 클라이언트 "승인된 JavaScript 원본"에 대시보드 도메인 추가

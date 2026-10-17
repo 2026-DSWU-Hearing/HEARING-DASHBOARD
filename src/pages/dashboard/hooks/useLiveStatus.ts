@@ -10,12 +10,12 @@ import {
   LIVE_QUERY_KEYS,
   LIVE_USER_POLLING_INTERVAL_MS,
 } from '../constants/livePolling'
-import { getActiveModeName, toDeviceStatus } from '../utils/liveStatus'
+import { getActiveModeName, toDeviceStatus, toPersona } from '../utils/liveStatus'
 import { useDashboard } from './useDashboard'
 
 /**
  * 라이브 모드 + 로그인 상태에서만 GET /modes · /devices · /users/me 를 폴링해
- * 현재 모드 · 연결 · 배터리 · 착용자 이름을 상태에 반영한다.
+ * 현재 모드 · 연결 · 배터리 · 착용자 이름과 장애 유형을 상태에 반영한다.
  * 청중 모니터에 띄운 창은 포커스가 없을 수 있어 refetchIntervalInBackground 를 켠다.
  * (백엔드가 mode_changed 를 보내면 useDashboardEvents 가 즉시 반영하고 modes 쿼리를 무효화한다)
  */
@@ -58,7 +58,7 @@ export const useLiveStatus = () => {
 
   useEffect(() => {
     if (!isEnabled || !userMeQuery.data) return
-    dispatch({ type: 'PERSONA_CHANGED', name: userMeQuery.data.nickname })
+    dispatch({ type: 'PERSONA_CHANGED', persona: toPersona(userMeQuery.data) })
   }, [isEnabled, userMeQuery.data, dispatch])
 
   return {
