@@ -65,7 +65,7 @@ project-root
 3. access 토큰 만료(60분)는 `/auth/refresh` 로 자동 갱신, 재접속은 지수 백오프(1→30초). 로그아웃하면 리플레이로 돌아간다
 4. 주소는 `VITE_API_BASE_URL`(기본 `https://hearing-api.duckdns.org`, 로컬 백엔드는 `http://localhost:8000` 지정), 로그인은 `VITE_GOOGLE_CLIENT_ID`(기본값은 앱과 같은 클라이언트)
 5. 배포 전 요청할 것: 백엔드 `.env` `CORS_ORIGINS` 에 대시보드 도메인 추가, 구글 OAuth 클라이언트 "승인된 JavaScript 원본"에 대시보드 도메인 추가
-6. 필터링 장면(`detection_filtered`)은 백엔드 `handle_detection` 에 브로드캐스트가 들어가면 자동으로 표시된다 (프론트는 준비됨)
+6. 필터링 장면(`detection_filtered`)과 모드 즉시 반영(`mode_changed`)은 백엔드가 그 메시지를 보내야 표시된다. **현재 배포 백엔드에는 미반영**(HEARING-BE PR #33, 시연 후 재검토) — 그래서 라이브에서는 모드에 없는 소리가 들려도 아무 표시가 없고, 모드 변경은 1.5초 폴링으로 반영된다. 프론트 코드는 준비돼 있어 백엔드가 보내기 시작하면 바로 동작한다
 
 ### 3D 흉상 대신 2D 도식이 보일 때
 
