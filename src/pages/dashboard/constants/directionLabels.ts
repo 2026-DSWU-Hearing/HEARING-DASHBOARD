@@ -1,4 +1,8 @@
-import type { FilterReasonTypes, VibrationDirectionTypes } from '../types/dashboardTypes'
+import type {
+  FilterReasonTypes,
+  MotorDirectionTypes,
+  VibrationDirectionTypes,
+} from '../types/dashboardTypes'
 
 export const DIRECTION_LABELS: Record<VibrationDirectionTypes, string> = {
   FRONT: '앞',
@@ -8,8 +12,14 @@ export const DIRECTION_LABELS: Record<VibrationDirectionTypes, string> = {
   UNKNOWN: '방향 미상',
 }
 
-/** 모터가 달린 방향 (넥밴드: 좌 · 우 · 뒤) */
-export const MOTOR_DIRECTIONS: VibrationDirectionTypes[] = ['LEFT', 'RIGHT', 'BACK']
+/** 감지 방향별로 실제 울리는 모터 (넥밴드 모터: 좌 · 우 · 뒤). 앞쪽은 모터가 없어 양쪽이 같이 울린다 */
+export const ACTIVE_MOTORS_BY_DIRECTION: Record<VibrationDirectionTypes, MotorDirectionTypes[]> = {
+  FRONT: ['LEFT', 'RIGHT'],
+  BACK: ['BACK'],
+  LEFT: ['LEFT'],
+  RIGHT: ['RIGHT'],
+  UNKNOWN: [],
+}
 
 export const FILTER_REASON_LABELS: Record<FilterReasonTypes, string> = {
   not_in_mode: '현재 모드에 없는 소리',

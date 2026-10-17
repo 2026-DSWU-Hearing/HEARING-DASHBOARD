@@ -13,6 +13,7 @@ import * as THREE from 'three'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DASHBOARD_THEME } from '../constants/dashboardTheme'
+import { ACTIVE_MOTORS_BY_DIRECTION } from '../constants/directionLabels'
 import {
   CAMERA_AZIMUTH_BY_DIRECTION,
   CAMERA_DISTANCE,
@@ -30,7 +31,7 @@ import {
   SOUND_WAVE_HEIGHT,
   VIBRATION_PULSE_DURATION_S,
 } from '../constants/neckbandScene'
-import type { VibrationDirectionTypes } from '../types/dashboardTypes'
+import type { MotorDirectionTypes, VibrationDirectionTypes } from '../types/dashboardTypes'
 import { getEmbeddedMannequinGltf } from '../utils/loadEmbeddedMannequin'
 import {
   createGlowTexture,
@@ -53,7 +54,6 @@ interface PulseStateTypes {
 }
 
 type PulseRefTypes = RefObject<PulseStateTypes | null>
-type MotorDirectionTypes = keyof typeof MOTOR_CURVE_POSITIONS
 
 const MAX_FRAME_DELTA_S = 0.1
 
@@ -227,7 +227,9 @@ const MotorHousing = ({
   const glowColor = useMemo(() => new THREE.Color(SCENE_COLORS.motorGlow), [])
 
   useFrame(() => {
-    const isTarget = pulseRef.current?.direction === direction
+    const pulseDirection = pulseRef.current?.direction
+    const isTarget =
+      pulseDirection !== undefined && ACTIVE_MOTORS_BY_DIRECTION[pulseDirection].includes(direction)
     const intensity = isTarget ? getPulseIntensity(pulseRef, performance.now()) : 0
 
     if (materialRef.current) {

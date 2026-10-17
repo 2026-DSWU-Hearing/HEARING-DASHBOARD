@@ -41,7 +41,8 @@ export const dashboardReducer = (
         events: [event, ...state.events].slice(0, MAX_EVENT_COUNT),
         activeEvent: event,
         activeStage: 'detected', // 첫 스테이지는 즉시 점등, 이후는 usePipelineAnimation 이 진행
-        currentMode: event.modeName,
+        // 라이브의 현재 모드는 서버(폴링 · mode_changed) 값이 기준 → 리플레이에서만 이벤트의 모드를 반영
+        currentMode: state.isReplayMode ? event.modeName : state.currentMode,
       }
     }
     case 'STAGE_ADVANCED':

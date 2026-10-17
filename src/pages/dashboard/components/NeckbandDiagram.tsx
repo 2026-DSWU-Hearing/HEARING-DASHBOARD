@@ -1,6 +1,6 @@
 import { DASHBOARD_THEME } from '../constants/dashboardTheme'
-import { MOTOR_DIRECTIONS } from '../constants/directionLabels'
-import type { VibrationDirectionTypes } from '../types/dashboardTypes'
+import { ACTIVE_MOTORS_BY_DIRECTION } from '../constants/directionLabels'
+import type { MotorDirectionTypes, VibrationDirectionTypes } from '../types/dashboardTypes'
 
 interface NeckbandDiagramPropTypes {
   activeDirection: VibrationDirectionTypes | null
@@ -8,7 +8,7 @@ interface NeckbandDiagramPropTypes {
 }
 
 interface MotorPositionTypes {
-  direction: VibrationDirectionTypes
+  direction: MotorDirectionTypes
   cx: number
   cy: number
   label: string
@@ -52,7 +52,7 @@ const describeSectorArc = (centerAngle: number, radius: number) => {
  * 소리 방향은 노란 아크, 진동한 모터는 빨갛게 펄스.
  */
 const NeckbandDiagram = ({ activeDirection, isVibrating }: NeckbandDiagramPropTypes) => {
-  const hasMotor = activeDirection !== null && MOTOR_DIRECTIONS.includes(activeDirection)
+  const activeMotors = activeDirection === null ? [] : ACTIVE_MOTORS_BY_DIRECTION[activeDirection]
   const sectorAngle = activeDirection !== null ? DIRECTION_ANGLES[activeDirection] : undefined
   const sectorColor = isVibrating ? DASHBOARD_THEME.accent : DASHBOARD_THEME.filtered
   const motorColor = DASHBOARD_THEME.emergency
@@ -130,7 +130,7 @@ const NeckbandDiagram = ({ activeDirection, isVibrating }: NeckbandDiagramPropTy
       />
 
       {MOTOR_POSITIONS.map(({ direction, cx, cy, label }) => {
-        const isActive = hasMotor && direction === activeDirection
+        const isActive = activeMotors.includes(direction)
         const isPulsing = isActive && isVibrating
         return (
           <g key={direction}>

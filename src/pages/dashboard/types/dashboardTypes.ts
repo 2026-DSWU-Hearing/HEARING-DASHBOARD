@@ -1,4 +1,6 @@
 export type VibrationDirectionTypes = 'FRONT' | 'BACK' | 'LEFT' | 'RIGHT' | 'UNKNOWN'
+/** 넥밴드에 모터가 달린 방향 (앞쪽은 모터 없음) */
+export type MotorDirectionTypes = 'LEFT' | 'RIGHT' | 'BACK'
 
 export type PipelineStageTypes =
   'detected' | 'onDeviceJudged' | 'serverClassified' | 'modeMatched' | 'notified'

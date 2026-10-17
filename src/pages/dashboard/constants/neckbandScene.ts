@@ -1,4 +1,4 @@
-import type { VibrationDirectionTypes } from '../types/dashboardTypes'
+import type { MotorDirectionTypes, VibrationDirectionTypes } from '../types/dashboardTypes'
 
 /** 카메라가 공전하는 중심점 (착용자 목 부근) */
 export const SCENE_TARGET: [number, number, number] = [0, 1.4, 0]
@@ -34,7 +34,7 @@ export const DIRECTION_VECTORS: Record<
 }
 
 /** 모터 하우징 위치 (넥밴드 곡선 위 파라미터 u, 0 = 왼쪽 끝 · 1 = 오른쪽 끝) */
-export const MOTOR_CURVE_POSITIONS: Record<'LEFT' | 'RIGHT' | 'BACK', number> = {
+export const MOTOR_CURVE_POSITIONS: Record<MotorDirectionTypes, number> = {
   LEFT: 0.045,
   BACK: 0.5,
   RIGHT: 0.955,

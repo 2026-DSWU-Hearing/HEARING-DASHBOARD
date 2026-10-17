@@ -1,5 +1,5 @@
 import { refreshAccessToken } from '@/shared/apis/refreshAccessToken'
-import { getStoredAccessToken } from '@/shared/stores/authStore'
+import { getStoredAccessToken, hasStoredRefreshToken } from '@/shared/stores/authStore'
 import { getWebSocketBaseUrl } from '@/shared/utils/getWebSocketBaseUrl'
 import { isTokenExpired } from '@/shared/utils/jwt'
 import type {
@@ -46,9 +46,10 @@ interface SubscribeOptionsTypes {
   onModeChanged?: (modeName: string) => void
 }
 
-const getValidAccessToken = async () => {
+/** 저장된 access 토큰이 유효하면 그대로, 아니면(또는 서버가 거부해 강제하면) refresh */
+const getValidAccessToken = async (shouldForceRefresh = false) => {
   const storedToken = getStoredAccessToken()
-  if (storedToken && !isTokenExpired(storedToken)) return storedToken
+  if (!shouldForceRefresh && storedToken && !isTokenExpired(storedToken)) return storedToken
   return refreshAccessToken()
 }
 
@@ -68,6 +69,7 @@ export const dashboardSocket = {
     let hasConnected = false
     let initialConnectAttempts = 0
     let authRefreshAttempts = 0
+    let shouldForceRefresh = false
 
     const setStatus = (status: LiveConnectionStatusTypes) => {
       if (!isUnsubscribed) onStatusChange?.(status)
@@ -78,13 +80,27 @@ export const dashboardSocket = {
       reconnectTimerId = window.setTimeout(connect, delayMs)
     }
 
+    /** 지수 백오프 재접속. 한 번도 못 연결한 채 상한에 닿으면 false (호출자가 종료 상태를 정한다) */
+    const retryWithBackoff = () => {
+      if (!hasConnected) {
+        initialConnectAttempts += 1
+        if (initialConnectAttempts >= MAX_INITIAL_CONNECT_ATTEMPTS) return false
+      }
+      scheduleReconnect(reconnectDelayMs)
+      reconnectDelayMs = Math.min(reconnectDelayMs * 2, MAX_RECONNECT_DELAY_MS)
+      return true
+    }
+
     const connect = async () => {
       setStatus(hasConnected ? 'reconnecting' : 'connecting')
-      const accessToken = await getValidAccessToken()
+      const accessToken = await getValidAccessToken(shouldForceRefresh)
+      shouldForceRefresh = false
       if (isUnsubscribed) return
 
       if (!accessToken) {
-        setStatus('authFailed')
+        // refresh 토큰이 비었으면 서버가 거부한 것(재로그인 필요), 남아 있으면 네트워크 등 일시 오류라 다시 시도
+        if (!hasStoredRefreshToken()) setStatus('authFailed')
+        else if (!retryWithBackoff()) setStatus('closed')
         return
       }
 
@@ -119,21 +135,13 @@ export const dashboardSocket = {
             setStatus('authFailed')
             return
           }
-          // 다음 connect 가 만료 토큰을 refresh 한다
+          // 서버가 거부한 토큰이라 만료 여부와 상관없이 다음 connect 에서 refresh 를 강제한다
+          shouldForceRefresh = true
           scheduleReconnect(INITIAL_RECONNECT_DELAY_MS)
           return
         }
 
-        if (!hasConnected) {
-          initialConnectAttempts += 1
-          if (initialConnectAttempts >= MAX_INITIAL_CONNECT_ATTEMPTS) {
-            setStatus('closed')
-            return
-          }
-        }
-
-        scheduleReconnect(reconnectDelayMs)
-        reconnectDelayMs = Math.min(reconnectDelayMs * 2, MAX_RECONNECT_DELAY_MS)
+        if (!retryWithBackoff()) setStatus('closed')
       }
     }
 
