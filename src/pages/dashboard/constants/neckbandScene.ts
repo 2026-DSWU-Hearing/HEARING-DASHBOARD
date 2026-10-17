@@ -45,12 +45,12 @@ export const SOUND_WAVE_HEIGHT = 1.5
 export const COMPASS_RADIUS = 2.3
 
 export const SCENE_COLORS = {
-  mannequin: '#3d414b',
+  mannequin: '#5a606b',
   band: '#d9dbe0',
   motor: '#cfd2d8',
   motorGlow: '#ff2a1a',
   label: '#8b93a5',
-  ring: '#2c3240',
+  ring: '#353b49',
 } as const
 
 /**

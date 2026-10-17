@@ -30,7 +30,12 @@ import {
   VIBRATION_PULSE_DURATION_S,
 } from '../constants/neckbandScene'
 import type { VibrationDirectionTypes } from '../types/dashboardTypes'
-import { createBustGeometry, EAR_PLACEMENTS, EAR_SCALE } from '../utils/mannequinGeometry'
+import {
+  createBaseGeometry,
+  createShoulderGeometry,
+  HEAD_PLACEMENT,
+  NECK_PLACEMENT,
+} from '../utils/mannequinGeometry'
 import {
   createGlowTexture,
   createLabelTexture,
@@ -105,25 +110,29 @@ const useMannequinMaterial = () =>
     [],
   )
 
-/** GLB 가 없거나 로딩 중일 때 쓰는 절차적 흉상 */
-const ProceduralBust = ({ material }: { material: THREE.Material }) => {
-  const bustGeometry = useMemo(() => createBustGeometry(), [])
+/** GLB 가 없거나 로딩 중 · 실패했을 때 쓰는 단순 마네킹 (머리 · 목 · 어깨 · 받침) */
+const SimpleMannequin = ({ material }: { material: THREE.Material }) => {
+  const baseGeometry = useMemo(() => createBaseGeometry(), [])
+  const shoulderGeometry = useMemo(() => createShoulderGeometry(), [])
 
   return (
     <group>
-      <mesh geometry={bustGeometry} material={material} castShadow receiveShadow />
-      {EAR_PLACEMENTS.map(({ position, rotation }) => (
-        <mesh
-          key={position[0]}
-          material={material}
-          position={position}
-          rotation={rotation}
-          scale={EAR_SCALE}
-          castShadow
-        >
-          <sphereGeometry args={[1, 32, 24]} />
-        </mesh>
-      ))}
+      <mesh geometry={baseGeometry} material={material} castShadow receiveShadow />
+      <mesh geometry={shoulderGeometry} material={material} castShadow receiveShadow />
+      <mesh material={material} position={NECK_PLACEMENT.position} castShadow receiveShadow>
+        <cylinderGeometry
+          args={[NECK_PLACEMENT.radiusTop, NECK_PLACEMENT.radiusBottom, NECK_PLACEMENT.height, 48]}
+        />
+      </mesh>
+      <mesh
+        material={material}
+        position={HEAD_PLACEMENT.position}
+        scale={HEAD_PLACEMENT.scale}
+        castShadow
+        receiveShadow
+      >
+        <sphereGeometry args={[HEAD_PLACEMENT.radius, 64, 48]} />
+      </mesh>
     </group>
   )
 }
@@ -180,7 +189,7 @@ class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasErr
   }
 
   componentDidCatch(error: Error) {
-    console.warn('[NeckbandScene] 흉상 GLB 로딩 실패, 절차적 흉상으로 대체합니다.', error)
+    console.warn('[NeckbandScene] 흉상 GLB 로딩 실패, 단순 마네킹으로 대체합니다.', error)
   }
 
   render() {
@@ -190,7 +199,7 @@ class ModelErrorBoundary extends Component<ModelErrorBoundaryPropTypes, { hasErr
 
 const Mannequin = () => {
   const material = useMannequinMaterial()
-  const fallback = <ProceduralBust material={material} />
+  const fallback = <SimpleMannequin material={material} />
 
   return (
     <ModelErrorBoundary fallback={fallback}>
@@ -427,8 +436,8 @@ const Floor = () => (
 
 const Lights = () => (
   <>
-    <ambientLight intensity={0.45} />
-    <hemisphereLight args={['#dfe6ff', '#0b0d12', 0.55]} />
+    <ambientLight intensity={0.6} />
+    <hemisphereLight args={['#dfe6ff', '#121419', 0.7]} />
     <directionalLight
       position={[3, 6.5, 3.5]}
       intensity={2.4}

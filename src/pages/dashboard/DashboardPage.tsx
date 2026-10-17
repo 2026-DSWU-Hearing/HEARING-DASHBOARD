@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import hearingLogo from '@/shared/assets/hearingLogo.svg'
 import ErrorBoundary from '@/shared/components/ErrorBoundary'
 import ControlPanel from './components/ControlPanel'
 import DashboardProvider from './components/DashboardProvider'
@@ -117,12 +118,8 @@ const DashboardContent = () => {
       />
 
       <header className="relative flex shrink-0 items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="bg-dash-accent size-2.5 rounded-full shadow-[0_0_12px_var(--color-dash-accent)]"
-          />
-          <span className="text-dash-body font-extrabold tracking-tight">Hear:ing</span>
+        <div className="flex items-center gap-3">
+          <img src={hearingLogo} alt="Hear:ing" className="dash:h-7 h-6 w-auto" />
           <span className="text-dash-caption text-dash-muted">실시간 소리 감지 모니터</span>
         </div>
         <span className="text-dash-caption text-dash-muted inline-flex items-center gap-2 rounded-full border border-white/8 px-3 py-1 font-semibold tracking-wider">

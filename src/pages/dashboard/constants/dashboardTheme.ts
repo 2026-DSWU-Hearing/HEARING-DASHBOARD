@@ -1,9 +1,9 @@
 /** 대시보드 색 토큰 (다크 배경 + 노란 포인트, PPT와 톤 통일). global.css @theme 와 동일 값 */
 export const DASHBOARD_THEME = {
-  background: '#0b0d12',
-  surface: '#13161e',
-  surfaceRaised: '#1b1f2a',
-  border: '#262b37',
+  background: '#121419',
+  surface: '#1a1d26',
+  surfaceRaised: '#242834',
+  border: '#2f3441',
   textPrimary: '#f3f4f6',
   textMuted: '#8b93a5',
   accent: '#ffd43b', // 포인트 (노랑)

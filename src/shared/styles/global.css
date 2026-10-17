@@ -7,10 +7,10 @@
   --breakpoint-dash: 1200px;
 
   /* 대시보드 색 토큰 (src/pages/dashboard/constants/dashboardTheme.ts 와 동일 값) */
-  --color-dash-bg: #0b0d12;
-  --color-dash-surface: #13161e;
-  --color-dash-raised: #1b1f2a;
-  --color-dash-border: #262b37;
+  --color-dash-bg: #121419;
+  --color-dash-surface: #1a1d26;
+  --color-dash-raised: #242834;
+  --color-dash-border: #2f3441;
   --color-dash-text: #f3f4f6;
   --color-dash-muted: #8b93a5;
   --color-dash-accent: #ffd43b;
@@ -98,4 +98,5 @@ body,
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
+  font-family: var(--font-sans);
 }
