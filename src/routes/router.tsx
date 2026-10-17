@@ -1,7 +1,6 @@
-import { createBrowserRouter, type RouteObject } from 'react-router'
-import HomePage from '@/pages/home/HomePage'
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 
-// 발표용 페이지: 별도 청크로 lazy loading, 네비게이션에는 노출하지 않음 (URL 직접 접근)
+// 발표용 대시보드가 이 앱의 전부라 루트(/)는 /dashboard 로 보낸다. 대시보드는 별도 청크로 lazy loading
 const EmptyFallback = () => null
 
 const dashboardRoute: RouteObject = {
@@ -19,5 +18,5 @@ const isDashboardPreview = import.meta.env.VITE_PREVIEW_ENTRY === 'dashboard'
 export const router = createBrowserRouter(
   isDashboardPreview
     ? [{ ...dashboardRoute, path: '*' }]
-    : [{ path: '/', element: <HomePage /> }, dashboardRoute],
+    : [{ path: '/', element: <Navigate to="/dashboard" replace /> }, dashboardRoute],
 )
