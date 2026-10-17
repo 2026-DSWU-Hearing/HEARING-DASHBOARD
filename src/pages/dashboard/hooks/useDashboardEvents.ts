@@ -46,7 +46,7 @@ export const useDashboardEvents = (scenario: ReplayScenarioTypes | null) => {
     return unsubscribe
   }, [isLiveActive, dispatch, queryClient])
 
-  /** 단일 시나리오 즉시 발화 (숫자 키 1~4). 리허설용이자 라이브 중 하드웨어 문제 시 비상용이라 두 모드 모두 동작 */
+  /** 단일 시나리오 즉시 발화 (숫자 키 1~5). 리허설용이자 라이브 중 하드웨어 문제 시 비상용이라 두 모드 모두 동작 */
   const fireScenario = useCallback(
     (scenarioId: string) => {
       const target = getScenarioById(scenarioId)

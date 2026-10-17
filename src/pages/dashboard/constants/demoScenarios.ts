@@ -33,7 +33,8 @@ interface ScenarioSourceTypes {
   message: DetectionMessageTypes
 }
 
-const SCENARIO_SOURCES: ScenarioSourceTypes[] = [
+/** 진동이 울리는 시나리오 — 네 방향을 하나씩 (숫자 키 1~4, 하루 전체 순서) */
+const VIBRATING_SCENARIO_SOURCES: ScenarioSourceTypes[] = [
   {
     id: 'horn-back',
     name: '경적 (긴급 · 뒤)',
@@ -54,19 +55,21 @@ const SCENARIO_SOURCES: ScenarioSourceTypes[] = [
     },
   },
   {
-    id: 'dog-filtered',
-    name: '개 짖음 (필터링 · 왼쪽)',
+    id: 'siren-left',
+    name: '사이렌 (긴급 · 왼쪽)',
     modeName: '외출',
     message: {
-      type: 'detection_filtered',
+      type: 'detection',
       data: {
-        sound_name: '개 짖음',
-        sound_category: '동물',
-        confidence: 0.78,
-        direction: 'LEFT',
-        ondevice_vibrated: false,
+        id: 2,
+        sound_name: '사이렌',
+        sound_category: '긴급',
+        source: 'ondevice',
+        confidence: 0.93,
+        location: null,
         detected_at: '2026-10-10T09:00:03+09:00',
-        reason: 'not_in_mode',
+        direction: 'LEFT',
+        ondevice_vibrated: true,
       },
     },
   },
@@ -77,7 +80,7 @@ const SCENARIO_SOURCES: ScenarioSourceTypes[] = [
     message: {
       type: 'detection',
       data: {
-        id: 2,
+        id: 3,
         sound_name: '안내방송',
         sound_category: '생활음',
         source: 'ai-server',
@@ -96,7 +99,7 @@ const SCENARIO_SOURCES: ScenarioSourceTypes[] = [
     message: {
       type: 'detection',
       data: {
-        id: 3,
+        id: 4,
         sound_name: '화재경보',
         sound_category: '긴급',
         source: 'ondevice',
@@ -109,6 +112,30 @@ const SCENARIO_SOURCES: ScenarioSourceTypes[] = [
     },
   },
 ]
+
+/**
+ * 모드에 없는 소리가 걸러지는 시나리오 (숫자 키 5). 백엔드가 detection_filtered 를 아직 보내지 않아
+ * 이번 시연에서 빠진 장면이라 하루 전체 순서에는 넣지 않고 단독 재생만 가능하게 둔다.
+ */
+const FILTERED_SCENARIO_SOURCE: ScenarioSourceTypes = {
+  id: 'dog-filtered',
+  name: '개 짖음 (필터링 · 왼쪽)',
+  modeName: '외출',
+  message: {
+    type: 'detection_filtered',
+    data: {
+      sound_name: '개 짖음',
+      sound_category: '동물',
+      confidence: 0.78,
+      direction: 'LEFT',
+      ondevice_vibrated: false,
+      detected_at: '2026-10-10T09:00:12+09:00',
+      reason: 'not_in_mode',
+    },
+  },
+}
+
+const SCENARIO_SOURCES = [...VIBRATING_SCENARIO_SOURCES, FILTERED_SCENARIO_SOURCE]
 
 const toReplayStep = (
   { modeName, message }: ScenarioSourceTypes,
@@ -126,8 +153,8 @@ const SINGLE_SCENARIOS: ReplayScenarioTypes[] = SCENARIO_SOURCES.map((source) =>
 
 const FULL_DAY_SCENARIO: ReplayScenarioTypes = {
   id: 'full-day',
-  name: '하루 전체 (4개 순차)',
-  steps: SCENARIO_SOURCES.map((source, index) =>
+  name: '하루 전체 (4방향 순차)',
+  steps: VIBRATING_SCENARIO_SOURCES.map((source, index) =>
     toReplayStep(source, index === 0 ? 0 : FULL_DAY_STEP_DELAY_MS),
   ),
 }
@@ -136,7 +163,7 @@ export const DEMO_SCENARIOS: ReplayScenarioTypes[] = [...SINGLE_SCENARIOS, FULL_
 
 export const DEFAULT_SCENARIO_ID = FULL_DAY_SCENARIO.id
 
-/** 숫자 키 1~4 → 단일 시나리오 (리허설 · 비상용) */
+/** 숫자 키 1~5 → 단일 시나리오 (리허설 · 비상용). 1 뒤 · 2 왼쪽 · 3 앞 · 4 오른쪽 · 5 필터링 */
 export const SHORTCUT_SCENARIO_IDS = SINGLE_SCENARIOS.map(({ id }) => id)
 
 export const getScenarioById = (scenarioId: string) =>

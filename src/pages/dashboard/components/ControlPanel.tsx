@@ -2,6 +2,7 @@ import { GoogleLogin, type CredentialResponse } from '@react-oauth/google'
 import type { ChangeEvent, MouseEvent } from 'react'
 import { IS_GOOGLE_CLIENT_CONFIGURED } from '@/shared/constants/apiConfig'
 import { LIVE_CONNECTION_LABELS } from '../constants/liveConnectionLabels'
+import { SHORTCUT_SCENARIO_IDS } from '../constants/demoScenarios'
 import type { LiveConnectionStatusTypes, ReplayScenarioTypes } from '../types/dashboardTypes'
 
 interface ControlPanelPropTypes {
@@ -168,11 +169,14 @@ const ControlPanel = ({
           disabled={isLive}
           className="border-dash-border bg-dash-raised text-dash-label text-dash-text w-full rounded-lg border px-3 py-2 disabled:opacity-40"
         >
-          {scenarios.map(({ id, name }) => (
-            <option key={id} value={id}>
-              {name}
-            </option>
-          ))}
+          {scenarios.map(({ id, name }) => {
+            const shortcutIndex = SHORTCUT_SCENARIO_IDS.indexOf(id)
+            return (
+              <option key={id} value={id}>
+                {shortcutIndex >= 0 ? `${shortcutIndex + 1} · ${name}` : name}
+              </option>
+            )
+          })}
         </select>
       </label>
 
@@ -212,7 +216,9 @@ const ControlPanel = ({
       </label>
 
       <p className="text-dash-label text-dash-muted mt-3">
-        {isLive ? '1~4 수동 발화 (비상용)' : 'space 재생/정지 · 1~4 단일 시나리오'}
+        {isLive
+          ? `1~${SHORTCUT_SCENARIO_IDS.length} 수동 발화 (비상용)`
+          : `space 재생/정지 · 1~${SHORTCUT_SCENARIO_IDS.length} 단일 시나리오`}
       </p>
     </aside>
   )
