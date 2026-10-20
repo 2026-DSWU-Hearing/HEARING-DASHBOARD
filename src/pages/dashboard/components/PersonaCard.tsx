@@ -25,7 +25,7 @@ const PersonaCard = ({ persona }: PersonaCardPropTypes) => {
       <div className="min-w-0">
         <p className="dash-eyebrow">착용자</p>
         <h2 className="text-dash-title text-dash-text truncate leading-tight font-bold">{name}</h2>
-        <p className="text-dash-label text-dash-muted truncate">{description}</p>
+        {description && <p className="text-dash-label text-dash-muted truncate">{description}</p>}
       </div>
     </section>
   )

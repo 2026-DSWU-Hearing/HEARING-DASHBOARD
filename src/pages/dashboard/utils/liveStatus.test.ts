@@ -35,6 +35,31 @@ describe('toDeviceStatus', () => {
     ).toEqual({ isDeviceConnected: true, batteryPercent: 64, isDeviceActiveUser: true })
   })
 
+  it('여러 기기 중 연결된 기기를 우선 본다', () => {
+    const disconnected = {
+      id: 1,
+      nickname: '예전 테스트 기기',
+      battery_level: 10,
+      is_connected: false,
+      is_active_user: false,
+      last_seen_at: null,
+    }
+    const connected = {
+      ...disconnected,
+      id: 2,
+      nickname: '내 넥밴드',
+      battery_level: 77,
+      is_connected: true,
+      is_active_user: true,
+    }
+    expect(toDeviceStatus([disconnected, connected])).toEqual({
+      isDeviceConnected: true,
+      batteryPercent: 77,
+      isDeviceActiveUser: true,
+    })
+    expect(toDeviceStatus([disconnected]).batteryPercent).toBe(10)
+  })
+
   it('배터리가 null 이면 그대로 null, 기기가 없으면 미연결', () => {
     expect(
       toDeviceStatus([
@@ -59,26 +84,20 @@ describe('toDeviceStatus', () => {
 describe('toPersona', () => {
   const user = { id: 1, email: 'user@example.com', nickname: '김하은' }
 
-  it('장애 유형을 한글 라벨로 붙인다', () => {
+  it('장애 유형을 한글 라벨로 보여준다', () => {
     expect(toPersona({ ...user, disability_type: 'HARD_OF_HEARING' })).toEqual({
       name: '김하은',
-      description: '난청인 · Hear:ing 넥밴드 착용',
+      description: '난청인',
     })
-    expect(toPersona({ ...user, disability_type: 'DEAF' }).description).toBe(
-      '농인 · Hear:ing 넥밴드 착용',
-    )
+    expect(toPersona({ ...user, disability_type: 'DEAF' }).description).toBe('농인')
   })
 
   it('소문자로 와도 같은 라벨', () => {
-    expect(toPersona({ ...user, disability_type: 'deaf' }).description).toBe(
-      '농인 · Hear:ing 넥밴드 착용',
-    )
+    expect(toPersona({ ...user, disability_type: 'deaf' }).description).toBe('농인')
   })
 
-  it('유형이 없거나 모르는 값이면 착용 문구만', () => {
-    expect(toPersona({ ...user, disability_type: null }).description).toBe('Hear:ing 넥밴드 착용')
-    expect(toPersona({ ...user, disability_type: 'OTHER' }).description).toBe(
-      'Hear:ing 넥밴드 착용',
-    )
+  it('유형이 없거나 모르는 값이면 설명을 비운다', () => {
+    expect(toPersona({ ...user, disability_type: null }).description).toBe('')
+    expect(toPersona({ ...user, disability_type: 'OTHER' }).description).toBe('')
   })
 })

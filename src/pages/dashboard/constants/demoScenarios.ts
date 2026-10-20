@@ -8,7 +8,7 @@ import { parseDetectionMessage } from '../utils/parseDetectionMessage'
 
 export const DEMO_PERSONA: PersonaTypes = {
   name: '김하은',
-  description: '청각장애 2급 · 출퇴근길 Hear:ing 넥밴드 착용',
+  description: '청각장애 2급',
 }
 
 export const DEFAULT_MODE_NAME = '외출'

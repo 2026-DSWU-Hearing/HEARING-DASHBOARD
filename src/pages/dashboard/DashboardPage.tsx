@@ -56,7 +56,7 @@ const DashboardContent = () => {
     handleGoogleLoginError,
     handleLogoutClick,
   } = useDashboardAuth()
-  useLiveStatus()
+  const { isLiveStatusError } = useLiveStatus()
   usePipelineAnimation(activeEvent)
 
   // 파이프라인이 '진동 + 푸시' 단계에 도달한 순간부터 모터 발광 (필터링 이벤트는 없음)
@@ -102,9 +102,12 @@ const DashboardContent = () => {
     dispatch({ type: 'REPLAY_TOGGLED', isReplayMode: nextIsReplayMode })
   }
 
+  // 소켓은 살아 있어도 GET /modes · /devices 가 실패하면 카드 값이 멈춘 것이라 배지에 같이 알린다
   const headerBadgeLabel = isReplayMode
     ? 'REPLAY'
-    : `LIVE · ${LIVE_CONNECTION_LABELS[isLoggedIn ? liveConnectionStatus : 'idle']}`
+    : `LIVE · ${LIVE_CONNECTION_LABELS[isLoggedIn ? liveConnectionStatus : 'idle']}${
+        isLiveStatusError ? ' · 상태 조회 실패' : ''
+      }`
   const headerDotClass = isReplayMode
     ? isPlaying
       ? 'bg-dash-success animate-dot-pulse'
