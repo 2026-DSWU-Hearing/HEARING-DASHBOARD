@@ -3,6 +3,7 @@ import type { ChangeEvent, MouseEvent } from 'react'
 import { IS_GOOGLE_CLIENT_CONFIGURED } from '@/shared/constants/apiConfig'
 import { LIVE_CONNECTION_LABELS } from '../constants/liveConnectionLabels'
 import { SHORTCUT_SCENARIO_IDS } from '../constants/demoScenarios'
+import { useElementWidth } from '../hooks/useElementWidth'
 import type { LiveConnectionStatusTypes, ReplayScenarioTypes } from '../types/dashboardTypes'
 
 interface ControlPanelPropTypes {
@@ -31,6 +32,9 @@ interface ControlPanelPropTypes {
 const BUTTON_CLASS =
   'rounded-lg border border-dash-border bg-dash-raised px-3 py-2 text-dash-label font-semibold whitespace-nowrap text-dash-text transition hover:border-dash-accent disabled:cursor-not-allowed disabled:opacity-40'
 const ACTIVE_TOGGLE_CLASS = 'border-dash-accent text-dash-accent'
+/** 구글 로그인 버튼은 px 폭만 받으므로(200~400) 패널 폭에 맞춰 클램프 */
+const GOOGLE_BUTTON_MIN_WIDTH = 200
+const GOOGLE_BUTTON_MAX_WIDTH = 330
 
 const ControlPanel = ({
   isOpen,
@@ -54,6 +58,12 @@ const ControlPanel = ({
   onClearClick,
   onModeNameChange,
 }: ControlPanelPropTypes) => {
+  const { elementRef: loginBoxRef, width: loginBoxWidth } = useElementWidth()
+  const googleButtonWidth = Math.min(
+    GOOGLE_BUTTON_MAX_WIDTH,
+    Math.max(GOOGLE_BUTTON_MIN_WIDTH, loginBoxWidth ?? GOOGLE_BUTTON_MAX_WIDTH),
+  )
+
   if (!isOpen) return null
 
   // 버튼에 포커스가 남으면 space 단축키가 버튼 클릭과 겹치므로 클릭 후 포커스 해제
@@ -95,12 +105,13 @@ const ControlPanel = ({
 
   return (
     <aside
+      id="control-panel"
       aria-label="시연 컨트롤 패널"
-      className="dash-card border-dash-accent/40 fixed right-5 bottom-5 z-20 w-96 p-4 shadow-2xl backdrop-blur"
+      className="dash-card border-dash-accent/40 fixed right-5 bottom-20 z-20 max-h-[calc(100dvh-6.5rem)] w-[calc(100vw-2.5rem)] max-w-96 overflow-y-auto p-4 shadow-2xl backdrop-blur"
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-dash-body text-dash-accent font-bold">컨트롤 패널</h2>
-        <span className="text-dash-label text-dash-muted">c 로 닫기</span>
+        <span className="text-dash-label text-dash-muted hidden md:inline">c 로 닫기</span>
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2">
@@ -134,7 +145,7 @@ const ControlPanel = ({
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div ref={loginBoxRef} className="flex flex-col gap-2">
             <p className="text-dash-caption text-dash-muted">
               라이브는 착용자 구글 계정으로 로그인해야 감지를 받습니다
             </p>
@@ -146,7 +157,7 @@ const ControlPanel = ({
                 shape="pill"
                 size="medium"
                 text="signin_with"
-                width="330"
+                width={googleButtonWidth}
               />
             ) : (
               <p className="text-dash-caption text-dash-emergency">
@@ -215,7 +226,7 @@ const ControlPanel = ({
         />
       </label>
 
-      <p className="text-dash-label text-dash-muted mt-3">
+      <p className="text-dash-label text-dash-muted mt-3 hidden md:block">
         {isLive
           ? `1~${SHORTCUT_SCENARIO_IDS.length} 수동 발화 (비상용)`
           : `space 재생/정지 · 1~${SHORTCUT_SCENARIO_IDS.length} 단일 시나리오`}
