@@ -5,9 +5,8 @@ import { postGoogleLogin } from '@/shared/apis/postGoogleLogin'
 import { postLogout } from '@/shared/apis/postLogout'
 import { useAuthStore } from '@/shared/stores/authStore'
 import { LIVE_QUERY_KEYS } from '../constants/livePolling'
+import { GOOGLE_STEP_FAILED_MESSAGE, getLoginErrorMessage } from '../utils/getLoginErrorMessage'
 import { useDashboard } from './useDashboard'
-
-const LOGIN_FAILED_MESSAGE = '구글 로그인에 실패했습니다. 다시 시도해 주세요.'
 
 /** 구글 로그인 → 토큰 저장 → 라이브 모드 전환. 로그아웃하면 리플레이로 복귀 */
 export const useDashboardAuth = () => {
@@ -25,7 +24,7 @@ export const useDashboardAuth = () => {
       setLoginErrorMessage(null)
       dispatch({ type: 'REPLAY_TOGGLED', isReplayMode: false })
     },
-    onError: () => setLoginErrorMessage(LOGIN_FAILED_MESSAGE),
+    onError: (error) => setLoginErrorMessage(getLoginErrorMessage(error)),
   })
 
   const handleGoogleLoginSuccess = useCallback(
@@ -40,7 +39,7 @@ export const useDashboardAuth = () => {
   )
 
   const handleGoogleLoginError = useCallback(() => {
-    setLoginErrorMessage(LOGIN_FAILED_MESSAGE)
+    setLoginErrorMessage(GOOGLE_STEP_FAILED_MESSAGE)
   }, [])
 
   const handleLogoutClick = useCallback(() => {
