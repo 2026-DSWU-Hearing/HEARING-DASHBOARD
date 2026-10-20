@@ -13,7 +13,11 @@ const DeviceStatusCard = ({
   batteryPercent,
   isDeviceActiveUser,
 }: DeviceStatusCardPropTypes) => {
-  const clampedBattery = batteryPercent === null ? null : Math.min(100, Math.max(0, batteryPercent))
+  // 연결이 끊기면 서버의 battery_level 은 마지막 보고값이라 표시하지 않는다 (끊김인데 % 가 떠 있으면 혼란)
+  const clampedBattery =
+    !isDeviceConnected || batteryPercent === null
+      ? null
+      : Math.min(100, Math.max(0, batteryPercent))
   const isLowBattery = clampedBattery !== null && clampedBattery <= LOW_BATTERY_PERCENT
 
   return (
@@ -48,7 +52,11 @@ const DeviceStatusCard = ({
 
       <div className="min-w-0 px-4">
         <p className="dash-eyebrow">배터리</p>
-        <p className="text-dash-title text-dash-text mt-1.5 leading-tight font-semibold tabular-nums">
+        <p
+          className={`text-dash-title mt-1.5 leading-tight font-semibold tabular-nums ${
+            clampedBattery === null ? 'text-dash-muted' : 'text-dash-text'
+          }`}
+        >
           {clampedBattery === null ? '—' : `${clampedBattery}%`}
         </p>
         <div
