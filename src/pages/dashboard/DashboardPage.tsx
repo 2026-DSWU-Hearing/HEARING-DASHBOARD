@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import hearingLogo from '@/shared/assets/hearingLogo.svg'
 import ErrorBoundary from '@/shared/components/ErrorBoundary'
 import ControlPanel from './components/ControlPanel'
+import ControlPanelToggleButton from './components/ControlPanelToggleButton'
 import DashboardProvider from './components/DashboardProvider'
 import DeviceStatusCard from './components/DeviceStatusCard'
 import EventLogTable from './components/EventLogTable'
@@ -174,6 +175,7 @@ const DashboardContent = () => {
         onClearClick={handleClearClick}
         onModeNameChange={handleModeNameChange}
       />
+      <ControlPanelToggleButton isOpen={isControlPanelOpen} onClick={handleControlPanelToggle} />
     </div>
   )
 }

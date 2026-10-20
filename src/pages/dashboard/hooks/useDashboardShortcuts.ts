@@ -9,7 +9,7 @@ interface DashboardShortcutHandlerTypes {
 
 const EDITABLE_TAG_NAMES = ['INPUT', 'TEXTAREA', 'SELECT']
 
-/** c: 컨트롤 패널 토글 · space: 재생/정지 · 숫자 키(1~5): 단일 시나리오 즉시 발화 */
+/** c: 컨트롤 패널 토글 (플로팅 버튼과 동일) · space: 재생/정지 · 숫자 키(1~5): 단일 시나리오 즉시 발화 */
 export const useDashboardShortcuts = ({
   onControlPanelToggle,
   onPlayToggle,
