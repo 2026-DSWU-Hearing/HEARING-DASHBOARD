@@ -34,7 +34,7 @@ interface ScenarioSourceTypes {
 }
 
 /**
- * 진동이 울리는 시나리오 — 발표 시연 순서 그대로 (숫자 키 1~3, 전체 재생 순서).
+ * 시연 시나리오 — 발표 순서 그대로 (숫자 키 1~3, 전체 재생 순서).
  * 소리 이름·카테고리는 AI 서버 category_map 의 실제 값과 동일하게 둔다 (경적=교통, 새=동물, 경보음=긴급).
  */
 const VIBRATING_SCENARIO_SOURCES: ScenarioSourceTypes[] = [
@@ -97,30 +97,6 @@ const VIBRATING_SCENARIO_SOURCES: ScenarioSourceTypes[] = [
   },
 ]
 
-/**
- * 모드에 없는 소리가 걸러지는 시나리오 (숫자 키 4). 백엔드가 detection_filtered 를 아직 보내지 않아
- * 라이브에서는 못 보는 장면이라 전체 재생 순서에는 넣지 않고 단독 재생만 가능하게 둔다.
- */
-const FILTERED_SCENARIO_SOURCE: ScenarioSourceTypes = {
-  id: 'dog-filtered',
-  name: '개 짖음 (필터링 · 왼쪽)',
-  modeName: '외출',
-  message: {
-    type: 'detection_filtered',
-    data: {
-      sound_name: '개 짖음',
-      sound_category: '동물',
-      confidence: 0.78,
-      direction: 'LEFT',
-      ondevice_vibrated: false,
-      detected_at: '2026-10-10T09:00:12+09:00',
-      reason: 'not_in_mode',
-    },
-  },
-}
-
-const SCENARIO_SOURCES = [...VIBRATING_SCENARIO_SOURCES, FILTERED_SCENARIO_SOURCE]
-
 const toReplayStep = (
   { modeName, message }: ScenarioSourceTypes,
   delayMs: number,
@@ -129,7 +105,7 @@ const toReplayStep = (
   return { delayMs, event }
 }
 
-const SINGLE_SCENARIOS: ReplayScenarioTypes[] = SCENARIO_SOURCES.map((source) => ({
+const SINGLE_SCENARIOS: ReplayScenarioTypes[] = VIBRATING_SCENARIO_SOURCES.map((source) => ({
   id: source.id,
   name: source.name,
   steps: [toReplayStep(source, 0)],
@@ -147,7 +123,7 @@ export const DEMO_SCENARIOS: ReplayScenarioTypes[] = [...SINGLE_SCENARIOS, FULL_
 
 export const DEFAULT_SCENARIO_ID = FULL_DAY_SCENARIO.id
 
-/** 숫자 키 1~4 → 단일 시나리오 (리허설 · 라이브 비상용). 1 경적(뒤) · 2 새(왼쪽) · 3 경보음(오른쪽) · 4 필터링 */
+/** 숫자 키 1~3 → 단일 시나리오 (리허설 · 라이브 비상용). 1 경적(뒤) · 2 새(왼쪽) · 3 경보음(오른쪽) */
 export const SHORTCUT_SCENARIO_IDS = SINGLE_SCENARIOS.map(({ id }) => id)
 
 export const getScenarioById = (scenarioId: string) =>
