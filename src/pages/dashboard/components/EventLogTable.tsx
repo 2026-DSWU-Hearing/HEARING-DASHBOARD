@@ -18,9 +18,6 @@ const formatTime = (isoString: string) => {
   return Number.isNaN(time.getTime()) ? '—' : TIME_FORMATTER.format(time)
 }
 
-const formatConfidence = (confidence: number | null) =>
-  confidence === null ? '—' : `${Math.round(confidence * 100)}%`
-
 const HEADER_CELL_CLASS = 'dash-eyebrow px-4 py-2 text-left'
 const BODY_CELL_CLASS = 'text-dash-body border-b border-white/5 px-4 py-2 whitespace-nowrap'
 const CHIP_CLASS =
@@ -42,13 +39,12 @@ const EventLogTable = ({ events }: EventLogTablePropTypes) => (
             <th className={HEADER_CELL_CLASS}>경로</th>
             <th className={HEADER_CELL_CLASS}>방향</th>
             <th className={HEADER_CELL_CLASS}>결과</th>
-            <th className={`${HEADER_CELL_CLASS} dash:table-cell hidden`}>신뢰도</th>
           </tr>
         </thead>
         <tbody>
           {events.length === 0 && (
             <tr>
-              <td colSpan={6} className="text-dash-body text-dash-muted px-4 py-10 text-center">
+              <td colSpan={5} className="text-dash-body text-dash-muted px-4 py-10 text-center">
                 아직 감지된 소리가 없습니다
               </td>
             </tr>
@@ -110,11 +106,6 @@ const EventLogTable = ({ events }: EventLogTablePropTypes) => (
                       )}
                     </span>
                   )}
-                </td>
-                <td
-                  className={`${BODY_CELL_CLASS} dash:table-cell text-dash-muted hidden tabular-nums`}
-                >
-                  {formatConfidence(event.confidence)}
                 </td>
               </tr>
             )
