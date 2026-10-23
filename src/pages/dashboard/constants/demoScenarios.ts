@@ -33,109 +33,69 @@ interface ScenarioSourceTypes {
   message: DetectionMessageTypes
 }
 
-/** 진동이 울리는 시나리오 — 네 방향을 하나씩 (숫자 키 1~4, 하루 전체 순서) */
+/**
+ * 시연 시나리오 — 발표 순서 그대로 (숫자 키 1~3, 전체 재생 순서).
+ * 소리 이름·카테고리는 AI 서버 category_map 의 실제 값과 동일하게 둔다 (경적=교통, 새=동물, 경보음=긴급).
+ */
 const VIBRATING_SCENARIO_SOURCES: ScenarioSourceTypes[] = [
   {
     id: 'horn-back',
-    name: '경적 (긴급 · 뒤)',
+    name: '경적 (서버 · 뒤)',
     modeName: '외출',
     message: {
       type: 'detection',
       data: {
         id: 1,
         sound_name: '경적',
-        sound_category: '긴급',
-        source: 'ondevice',
-        confidence: 0.91,
+        sound_category: '교통',
+        source: 'ai-server',
+        confidence: 0.88,
         location: null,
         detected_at: '2026-10-10T09:00:00+09:00',
         direction: 'BACK',
-        ondevice_vibrated: true,
-      },
-    },
-  },
-  {
-    id: 'siren-left',
-    name: '사이렌 (긴급 · 왼쪽)',
-    modeName: '외출',
-    message: {
-      type: 'detection',
-      data: {
-        id: 2,
-        sound_name: '사이렌',
-        sound_category: '긴급',
-        source: 'ondevice',
-        confidence: 0.93,
-        location: null,
-        detected_at: '2026-10-10T09:00:03+09:00',
-        direction: 'LEFT',
-        ondevice_vibrated: true,
-      },
-    },
-  },
-  {
-    id: 'bus-ambient',
-    name: '안내방송 (서버 · 앞)',
-    modeName: '외출',
-    message: {
-      type: 'detection',
-      data: {
-        id: 3,
-        sound_name: '안내방송',
-        sound_category: '생활음',
-        source: 'ai-server',
-        confidence: 0.84,
-        location: null,
-        detected_at: '2026-10-10T09:00:06+09:00',
-        direction: 'FRONT',
         ondevice_vibrated: false,
       },
     },
   },
   {
-    id: 'fire-alarm',
-    name: '화재경보 (긴급 · 오른쪽)',
-    modeName: '회사',
+    id: 'bird-left',
+    name: '새 (서버 · 왼쪽)',
+    modeName: '외출',
     message: {
       type: 'detection',
       data: {
-        id: 4,
-        sound_name: '화재경보',
-        sound_category: '긴급',
-        source: 'ondevice',
-        confidence: 0.97,
+        id: 2,
+        sound_name: '새',
+        sound_category: '동물',
+        source: 'ai-server',
+        confidence: 0.82,
         location: null,
-        detected_at: '2026-10-10T09:00:09+09:00',
+        detected_at: '2026-10-10T09:00:03+09:00',
+        direction: 'LEFT',
+        ondevice_vibrated: false,
+      },
+    },
+  },
+  {
+    id: 'alarm-right',
+    name: '경보음 (온디바이스 · 오른쪽)',
+    modeName: '외출',
+    message: {
+      type: 'detection',
+      data: {
+        id: 3,
+        sound_name: '경보음',
+        sound_category: '긴급',
+        source: 'device',
+        confidence: 0.95,
+        location: null,
+        detected_at: '2026-10-10T09:00:06+09:00',
         direction: 'RIGHT',
         ondevice_vibrated: true,
       },
     },
   },
 ]
-
-/**
- * 모드에 없는 소리가 걸러지는 시나리오 (숫자 키 5). 백엔드가 detection_filtered 를 아직 보내지 않아
- * 이번 시연에서 빠진 장면이라 하루 전체 순서에는 넣지 않고 단독 재생만 가능하게 둔다.
- */
-const FILTERED_SCENARIO_SOURCE: ScenarioSourceTypes = {
-  id: 'dog-filtered',
-  name: '개 짖음 (필터링 · 왼쪽)',
-  modeName: '외출',
-  message: {
-    type: 'detection_filtered',
-    data: {
-      sound_name: '개 짖음',
-      sound_category: '동물',
-      confidence: 0.78,
-      direction: 'LEFT',
-      ondevice_vibrated: false,
-      detected_at: '2026-10-10T09:00:12+09:00',
-      reason: 'not_in_mode',
-    },
-  },
-}
-
-const SCENARIO_SOURCES = [...VIBRATING_SCENARIO_SOURCES, FILTERED_SCENARIO_SOURCE]
 
 const toReplayStep = (
   { modeName, message }: ScenarioSourceTypes,
@@ -145,7 +105,7 @@ const toReplayStep = (
   return { delayMs, event }
 }
 
-const SINGLE_SCENARIOS: ReplayScenarioTypes[] = SCENARIO_SOURCES.map((source) => ({
+const SINGLE_SCENARIOS: ReplayScenarioTypes[] = VIBRATING_SCENARIO_SOURCES.map((source) => ({
   id: source.id,
   name: source.name,
   steps: [toReplayStep(source, 0)],
@@ -153,7 +113,7 @@ const SINGLE_SCENARIOS: ReplayScenarioTypes[] = SCENARIO_SOURCES.map((source) =>
 
 const FULL_DAY_SCENARIO: ReplayScenarioTypes = {
   id: 'full-day',
-  name: '하루 전체 (4방향 순차)',
+  name: '시연 순서 (경적 → 새 → 경보음)',
   steps: VIBRATING_SCENARIO_SOURCES.map((source, index) =>
     toReplayStep(source, index === 0 ? 0 : FULL_DAY_STEP_DELAY_MS),
   ),
@@ -163,7 +123,7 @@ export const DEMO_SCENARIOS: ReplayScenarioTypes[] = [...SINGLE_SCENARIOS, FULL_
 
 export const DEFAULT_SCENARIO_ID = FULL_DAY_SCENARIO.id
 
-/** 숫자 키 1~5 → 단일 시나리오 (리허설 · 비상용). 1 뒤 · 2 왼쪽 · 3 앞 · 4 오른쪽 · 5 필터링 */
+/** 숫자 키 1~3 → 단일 시나리오 (리허설 · 라이브 비상용). 1 경적(뒤) · 2 새(왼쪽) · 3 경보음(오른쪽) */
 export const SHORTCUT_SCENARIO_IDS = SINGLE_SCENARIOS.map(({ id }) => id)
 
 export const getScenarioById = (scenarioId: string) =>
